@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Critter Kart Race</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell app-shell--game">
+      <section id="gamePage" class="screen screen--active game-screen" aria-labelledby="gameTitle">
+        <div id="startPanel" class="game-panel game-panel--active">
+          <div class="screen-header">
+            <p class="eyebrow">Ready set</p>
+            <h1 id="gameTitle">Critter Kart</h1>
+          </div>
+
+          <div class="carousel" aria-label="Choose kart">
+            <button id="prevKart" class="icon-button icon-button--prev" type="button" aria-label="Previous kart">‹</button>
+            <div id="carouselViewport" class="carousel-viewport" tabindex="0" role="group" aria-label="Selected kart">
+              <div id="carouselTrack" class="carousel-track"></div>
+            </div>
+            <button id="nextKart" class="icon-button icon-button--next" type="button" aria-label="Next kart">›</button>
+          </div>
+          <div id="carouselDots" class="carousel-dots" aria-label="Kart carousel pagination"></div>
+
+          <button id="startGame" class="primary-button" type="button">Start race</button>
+
+          <div class="control-card">
+            <div>
+              <h2>Controls</h2>
+              <p id="controlHint">Use the left and right buttons during the race.</p>
+            </div>
+            <div class="segmented-control" aria-label="Control mode">
+              <button id="buttonsMode" class="segment segment--active" type="button">Buttons</button>
+              <button id="tiltMode" class="segment" type="button">Tilt</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="playPanel" class="game-panel">
+          <div class="hud" aria-live="polite">
+            <div>
+              <span>Distance</span>
+              <strong id="distanceText">0 m</strong>
+            </div>
+            <div>
+              <span>Best</span>
+              <strong id="bestText">0 m</strong>
+            </div>
+            <button id="pauseGame" class="hud-button" type="button">Pause</button>
+            <button id="gameMenu" class="hud-button" type="button">Menu</button>
+          </div>
+          <canvas id="gameCanvas" width="720" height="1080" aria-label="Critter Kart racing game"></canvas>
+          <div id="touchControls" class="touch-controls">
+            <button id="leftControl" class="drive-button" type="button" aria-label="Move left">‹</button>
+            <button id="rightControl" class="drive-button" type="button" aria-label="Move right">›</button>
+          </div>
+        </div>
+
+        <div id="endPanel" class="game-panel">
+          <div class="finish-card">
+            <p class="eyebrow">Race over</p>
+            <h1>Nice run</h1>
+            <p id="finalScore" class="final-score">0 m</p>
+            <div class="finish-actions">
+              <button id="retryGame" class="primary-button" type="button">Race again</button>
+              <button id="chooseKart" class="secondary-button" type="button">Choose kart</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

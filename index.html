@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Critter Kart</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="pollPage" class="screen screen--active" aria-labelledby="pollTitle">
+        <div class="screen-header">
+          <p class="eyebrow">Critter Kart</p>
+          <h1 id="pollTitle">Pick your racer</h1>
+          <p class="lede">Choose a favourite kart, then reveal the starting grid.</p>
+        </div>
+
+        <div id="pollOptions" class="poll-options">
+          <div id="racerGrid" class="racer-grid" aria-label="Racer voting options"></div>
+        </div>
+        <div class="poll-actions">
+          <button id="skipVote" class="secondary-button" type="button">Skip voting</button>
+        </div>
+        <div id="voteSubmitPanel" class="vote-submit-panel">
+          <button id="submitVote" class="primary-button vote-submit" type="button" disabled>
+            Submit vote
+          </button>
+        </div>
+
+        <div id="resultsPanel" class="results-panel" hidden>
+          <div class="results-copy">
+            <p class="eyebrow">Fan vote</p>
+            <h2>Race day results</h2>
+          </div>
+          <div id="resultsList" class="results-list"></div>
+          <button id="raceCta" class="primary-button" type="button">Start racing</button>
+        </div>
+      </section>
+
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
