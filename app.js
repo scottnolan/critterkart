@@ -697,10 +697,16 @@ function bindHold(button, property) {
   const set = (value) => {
     state.game[property] = value;
   };
-  button.addEventListener("pointerdown", () => set(true));
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    button.setPointerCapture?.(event.pointerId);
+    set(true);
+  });
   button.addEventListener("pointerup", () => set(false));
   button.addEventListener("pointercancel", () => set(false));
   button.addEventListener("pointerleave", () => set(false));
+  button.addEventListener("selectstart", (event) => event.preventDefault());
+  button.addEventListener("contextmenu", (event) => event.preventDefault());
 }
 
 racerGrid?.addEventListener("keydown", handlePollKeydown);
