@@ -14,8 +14,8 @@ const racers = [
 ];
 
 const supabaseConfig = {
-  url: "",
-  anonKey: "",
+  url: "https://dailselxcskddfleeemt.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhaWxzZWx4Y3NrZGRmbGVlZW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzA5MTIsImV4cCI6MjA5NTAwNjkxMn0.09ZwREefIlHfwJK6s_NBIXlDCrOZfziskMVKOpF_r9Q",
 };
 
 const obstacleAssets = [
