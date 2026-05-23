@@ -45,7 +45,11 @@ For obstacles:
 
 ```js
 const obstacleAssets = [
-  { color: "#f57d2a", image: "./assets/obstacles/cone.png" },
-  { color: "#f2b93b", image: "./assets/obstacles/banana.png" },
+  { type: "oil", effect: "spin", weight: 3, color: "#1d2528", image: "./assets/obstacles/oil.png" },
+  { type: "brick", effect: "crash", weight: 6, color: "#d94135", image: "./assets/obstacles/brick.png" },
+  { type: "cone", effect: "slow", weight: 3, color: "#f57d2a", image: "./assets/obstacles/cone.png" },
+  { type: "jump", effect: "jump", weight: 1, color: "#8bd3ff", image: "./assets/obstacles/jump.png" },
 ];
 ```
+
+Obstacle frequency is weighted: higher `weight` values spawn more often.

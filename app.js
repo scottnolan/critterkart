@@ -19,10 +19,43 @@ const supabaseConfig = {
 };
 
 const obstacleAssets = [
-  { color: "#f57d2a", image: "" },
-  { color: "#f2b93b", image: "" },
-  { color: "#ffffff", image: "" },
-  { color: "#2473d4", image: "" },
+  {
+    type: "oil",
+    label: "Oil",
+    effect: "spin",
+    frequency: "medium",
+    weight: 3,
+    color: "#1d2528",
+    image: "",
+  },
+  {
+    type: "brick",
+    label: "Lego bricks",
+    effect: "crash",
+    frequency: "common",
+    weight: 6,
+    color: "#d94135",
+    colors: ["#d94135", "#f2b93b", "#2473d4", "#2f9e68", "#ffffff"],
+    image: "",
+  },
+  {
+    type: "cone",
+    label: "Orange cone",
+    effect: "slow",
+    frequency: "medium",
+    weight: 3,
+    color: "#f57d2a",
+    image: "",
+  },
+  {
+    type: "jump",
+    label: "Jump",
+    effect: "jump",
+    frequency: "rare",
+    weight: 1,
+    color: "#8bd3ff",
+    image: "",
+  },
 ];
 
 const trackArt = {
@@ -51,11 +84,16 @@ const state = {
     lastTime: 0,
     obstacles: [],
     spawnTimer: 0,
+    collisionEffect: null,
+    slowUntil: 0,
+    jumpUntil: 0,
+    speedBoostUntil: 0,
     keys: new Set(),
     holdingLeft: false,
     holdingRight: false,
     tilt: 0,
     animationFrame: 0,
+    countdownActive: false,
   },
 };
 
@@ -94,6 +132,9 @@ const chooseKart = document.querySelector("#chooseKart");
 const touchControls = document.querySelector("#touchControls");
 const leftControl = document.querySelector("#leftControl");
 const rightControl = document.querySelector("#rightControl");
+const countdownOverlay = document.querySelector("#countdownOverlay");
+const countdownKart = document.querySelector("#countdownKart");
+const countdownNumber = document.querySelector("#countdownNumber");
 const isPollPage = Boolean(racerGrid);
 const isGamePage = Boolean(gamePage);
 let carouselTouchStartX = 0;
@@ -145,10 +186,38 @@ function getAssetImage(src) {
   if (!src) return undefined;
   if (!imageCache.has(src)) {
     const image = new Image();
+    image.decoding = "async";
     image.src = src;
     imageCache.set(src, image);
   }
   return imageCache.get(src);
+}
+
+function preloadImage(src) {
+  const image = getAssetImage(src);
+  if (!image) return Promise.resolve();
+  if (image.complete && image.naturalWidth > 0) return Promise.resolve(image);
+
+  return new Promise((resolve) => {
+    image.addEventListener("load", () => resolve(image), { once: true });
+    image.addEventListener("error", () => resolve(image), { once: true });
+  });
+}
+
+function preloadRaceAssets() {
+  const imageSources = new Set();
+  racers.forEach((racer) => {
+    imageSources.add(racer.heroImage);
+    imageSources.add(racer.gameImage);
+  });
+  obstacleAssets.forEach((asset) => imageSources.add(asset.image));
+  imageSources.add(trackArt.image);
+  return Promise.all([...imageSources].filter(Boolean).map(preloadImage));
+}
+
+function preloadSelectedRacerImages() {
+  const racer = racers[state.selectedIndex];
+  return Promise.all([preloadImage(racer.heroImage), preloadImage(racer.gameImage)]);
 }
 
 function renderRacers() {
@@ -414,13 +483,14 @@ function requestTiltPermission() {
 function changeKart(direction) {
   state.selectedIndex = (state.selectedIndex + direction + racers.length) % racers.length;
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
+  preloadSelectedRacerImages();
   renderRacers();
   renderCarousel();
 }
 
-function resetGame() {
+function resetGame(startRunning = true) {
   const game = state.game;
-  game.running = true;
+  game.running = startRunning;
   game.paused = false;
   game.playerX = 0.5;
   game.targetX = 0.5;
@@ -430,17 +500,62 @@ function resetGame() {
   game.lastTime = performance.now();
   game.obstacles = [];
   game.spawnTimer = 0;
+  game.collisionEffect = null;
+  game.slowUntil = 0;
+  game.jumpUntil = 0;
+  game.speedBoostUntil = 0;
   game.tilt = 0;
   if (pauseGameButton) pauseGameButton.textContent = "Pause";
   distanceText.textContent = "0 m";
   bestText.textContent = `${Math.round(game.best)} m`;
 }
 
-function startGame() {
-  resetGame();
+function sleep(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function setCountdownValue(value) {
+  if (!countdownNumber || !countdownOverlay) return;
+  countdownNumber.textContent = value;
+  countdownOverlay.classList.remove("countdown-overlay--tick");
+  void countdownOverlay.offsetWidth;
+  countdownOverlay.classList.add("countdown-overlay--tick");
+}
+
+async function playRaceCountdown() {
+  if (!countdownOverlay) return;
+  const racer = racers[state.selectedIndex];
+  if (countdownKart) countdownKart.src = racer.heroImage;
+
+  countdownOverlay.hidden = false;
+  countdownOverlay.classList.remove("countdown-overlay--split");
+
+  for (const value of ["3", "2", "1"]) {
+    setCountdownValue(value);
+    await sleep(820);
+  }
+
+  countdownOverlay.classList.remove("countdown-overlay--tick");
+  countdownOverlay.classList.add("countdown-overlay--split");
+  await sleep(720);
+  countdownOverlay.hidden = true;
+}
+
+async function startGame() {
+  if (state.game.countdownActive) return;
+  state.game.countdownActive = true;
+  cancelAnimationFrame(state.game.animationFrame);
+  resetGame(false);
   setGamePanel("play");
   startGameButton?.blur();
-  cancelAnimationFrame(state.game.animationFrame);
+  drawGame();
+  await preloadSelectedRacerImages();
+  await playRaceCountdown();
+  state.game.countdownActive = false;
+  state.game.running = true;
+  state.game.lastTime = performance.now();
   state.game.animationFrame = requestAnimationFrame(updateGame);
 }
 
@@ -488,10 +603,12 @@ function returnToGameMenu() {
   const game = state.game;
   game.running = false;
   game.paused = false;
+  game.countdownActive = false;
   game.holdingLeft = false;
   game.holdingRight = false;
   game.keys.clear();
   cancelAnimationFrame(game.animationFrame);
+  if (countdownOverlay) countdownOverlay.hidden = true;
   if (pauseGameButton) pauseGameButton.textContent = "Pause";
   renderCarousel();
   setGamePanel("start");
@@ -511,15 +628,21 @@ function drawBrickPattern(x, y, width, height, colorA, colorB, brickSize = 24) {
   }
 }
 
-function drawKart(x, y, width, height, racer) {
+function drawKart(x, y, width, height, racer, options = {}) {
+  const rotation = options.rotation || 0;
+  const scale = options.scale || 1;
   const asset = getAssetImage(racer.gameImage);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.scale(scale, scale);
+
   if (asset?.complete && asset.naturalWidth > 0) {
-    ctx.drawImage(asset, x - width / 2, y - height / 2, width, height);
+    ctx.drawImage(asset, -width / 2, -height / 2, width, height);
+    ctx.restore();
     return;
   }
 
-  ctx.save();
-  ctx.translate(x, y);
   ctx.fillStyle = racer.color;
   ctx.strokeStyle = "rgba(0,0,0,0.3)";
   ctx.lineWidth = 5;
@@ -557,28 +680,100 @@ function roundRect(x, y, width, height, radius) {
 
 function drawObstacle(obstacle) {
   const asset = getAssetImage(obstacle.image);
+  const rotation = obstacle.rotation || 0;
   if (asset?.complete && asset.naturalWidth > 0) {
-    ctx.drawImage(
-      asset,
-      obstacle.x - obstacle.size / 2,
-      obstacle.y - obstacle.size / 2,
-      obstacle.size,
-      obstacle.size,
-    );
+    ctx.save();
+    ctx.translate(obstacle.x, obstacle.y);
+    ctx.rotate(rotation);
+    ctx.drawImage(asset, -obstacle.size / 2, -obstacle.size / 2, obstacle.size, obstacle.size);
+    ctx.restore();
     return;
   }
 
   ctx.save();
   ctx.translate(obstacle.x, obstacle.y);
+  ctx.rotate(rotation);
   ctx.fillStyle = obstacle.color;
   ctx.strokeStyle = "rgba(0,0,0,0.25)";
   ctx.lineWidth = 4;
-  roundRect(-obstacle.size / 2, -obstacle.size / 2, obstacle.size, obstacle.size, 8);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "rgba(255,255,255,0.4)";
-  ctx.fillRect(-obstacle.size * 0.28, -obstacle.size * 0.28, obstacle.size * 0.2, obstacle.size * 0.2);
-  ctx.fillRect(obstacle.size * 0.08, obstacle.size * 0.02, obstacle.size * 0.2, obstacle.size * 0.2);
+
+  if (obstacle.type === "oil") {
+    ctx.scale(1.35, 0.62);
+    ctx.beginPath();
+    ctx.arc(0, 0, obstacle.size * 0.36, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.22)";
+    ctx.beginPath();
+    ctx.arc(-obstacle.size * 0.1, -obstacle.size * 0.08, obstacle.size * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (obstacle.type === "cone") {
+    ctx.beginPath();
+    ctx.moveTo(0, -obstacle.size * 0.46);
+    ctx.lineTo(obstacle.size * 0.32, obstacle.size * 0.32);
+    ctx.lineTo(-obstacle.size * 0.32, obstacle.size * 0.32);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#f9f7ef";
+    ctx.fillRect(-obstacle.size * 0.18, obstacle.size * 0.03, obstacle.size * 0.36, obstacle.size * 0.09);
+  } else if (obstacle.type === "jump") {
+    ctx.fillStyle = "#8bd3ff";
+    roundRect(-obstacle.size * 0.48, -obstacle.size * 0.24, obstacle.size * 0.96, obstacle.size * 0.48, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#f9f7ef";
+    ctx.beginPath();
+    ctx.moveTo(-obstacle.size * 0.2, -obstacle.size * 0.14);
+    ctx.lineTo(obstacle.size * 0.2, 0);
+    ctx.lineTo(-obstacle.size * 0.2, obstacle.size * 0.14);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    roundRect(-obstacle.size / 2, -obstacle.size / 2, obstacle.size, obstacle.size, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fillRect(-obstacle.size * 0.28, -obstacle.size * 0.28, obstacle.size * 0.2, obstacle.size * 0.2);
+    ctx.fillRect(obstacle.size * 0.08, obstacle.size * 0.02, obstacle.size * 0.2, obstacle.size * 0.2);
+  }
+  ctx.restore();
+}
+
+function drawCollisionEffect(effect) {
+  if (!effect) return;
+
+  const elapsed = performance.now() - effect.startedAt;
+  const progress = Math.min(1, elapsed / effect.duration);
+
+  ctx.save();
+  ctx.translate(effect.x, effect.y);
+
+  if (effect.type === "crash") {
+    const radius = 18 + progress * 54;
+    ctx.globalAlpha = 1 - progress;
+    ctx.strokeStyle = "#f57d2a";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#f2b93b";
+    for (let index = 0; index < 8; index += 1) {
+      const angle = (Math.PI * 2 * index) / 8;
+      const distance = progress * 56;
+      ctx.fillRect(Math.cos(angle) * distance - 4, Math.sin(angle) * distance - 4, 8, 8);
+    }
+  } else if (effect.type === "spin") {
+    ctx.globalAlpha = 1 - progress * 0.4;
+    ctx.strokeStyle = "#1d2528";
+    ctx.lineWidth = 5;
+    for (let index = 0; index < 3; index += 1) {
+      ctx.beginPath();
+      ctx.arc(0, 0, 26 + index * 13 + progress * 12, progress * Math.PI * 4, progress * Math.PI * 4 + Math.PI * 1.35);
+      ctx.stroke();
+    }
+  }
+
   ctx.restore();
 }
 
@@ -613,7 +808,28 @@ function drawGame() {
 
   const playerX = roadX + game.playerX * roadW;
   const playerY = height * 0.89;
-  drawKart(playerX, playerY, width * 0.32, height * 0.17, racer);
+  const jumpProgress = game.jumpUntil > performance.now() ? 1 - (game.jumpUntil - performance.now()) / 620 : 0;
+  const jumpLift = Math.sin(jumpProgress * Math.PI) * height * 0.08;
+  const jumpScale = 1 + Math.sin(jumpProgress * Math.PI) * 0.22;
+  const collisionProgress = game.collisionEffect
+    ? Math.min(1, (performance.now() - game.collisionEffect.startedAt) / game.collisionEffect.duration)
+    : 0;
+  const spinRotation = game.collisionEffect?.type === "spin" ? collisionProgress * Math.PI * 5 : 0;
+  const crashRotation = game.collisionEffect?.type === "crash" ? Math.sin(collisionProgress * Math.PI * 8) * 0.12 : 0;
+  drawKart(playerX, playerY - jumpLift, width * 0.32, height * 0.17, racer, {
+    rotation: spinRotation + crashRotation,
+    scale: jumpScale,
+  });
+  drawCollisionEffect(game.collisionEffect);
+}
+
+function chooseObstacleAsset() {
+  const totalWeight = obstacleAssets.reduce((sum, asset) => sum + asset.weight, 0);
+  let pick = Math.random() * totalWeight;
+  return obstacleAssets.find((asset) => {
+    pick -= asset.weight;
+    return pick <= 0;
+  }) || obstacleAssets[0];
 }
 
 function spawnObstacle() {
@@ -622,13 +838,18 @@ function spawnObstacle() {
   const roadW = width * 0.64;
   const lane = Math.floor(Math.random() * 3);
   const laneX = roadX + roadW * (0.2 + lane * 0.3);
-  const asset = obstacleAssets[Math.floor(Math.random() * obstacleAssets.length)];
+  const asset = chooseObstacleAsset();
+  const color = asset.colors?.[Math.floor(Math.random() * asset.colors.length)] || asset.color;
   state.game.obstacles.push({
+    type: asset.type,
+    effect: asset.effect,
     x: laneX,
     y: -40,
     size: 54 + Math.random() * 18,
-    color: asset.color,
+    color,
     image: asset.image,
+    rotation: asset.type === "brick" ? Math.random() * Math.PI : 0,
+    hit: false,
   });
 }
 
@@ -639,15 +860,66 @@ function rectanglesOverlap(a, b) {
   );
 }
 
+function startCollisionEffect(type, x, y) {
+  state.game.collisionEffect = {
+    type,
+    x,
+    y,
+    startedAt: performance.now(),
+    duration: type === "spin" ? 760 : 560,
+  };
+}
+
+function handleObstacleHit(obstacle, playerBox, now) {
+  obstacle.hit = true;
+
+  if (obstacle.effect === "spin") {
+    startCollisionEffect("spin", playerBox.x, playerBox.y);
+    return;
+  }
+
+  if (obstacle.effect === "crash") {
+    startCollisionEffect("crash", obstacle.x, obstacle.y);
+    return;
+  }
+
+  if (obstacle.effect === "slow") {
+    state.game.slowUntil = now + 1350;
+    obstacle.knocked = true;
+    obstacle.vx = obstacle.x < playerBox.x ? -220 : 220;
+    obstacle.rotationSpeed = obstacle.vx * 0.012;
+    return;
+  }
+
+  if (obstacle.effect === "jump") {
+    state.game.jumpUntil = now + 620;
+    state.game.speedBoostUntil = now + 1400;
+    obstacle.y = canvas.height + 120;
+  }
+}
+
 function updateGame(now) {
   const game = state.game;
   if (!game.running || game.paused) return;
 
   const delta = Math.min((now - game.lastTime) / 1000, 0.04);
   game.lastTime = now;
+
+  if (game.collisionEffect) {
+    drawGame();
+    if (now - game.collisionEffect.startedAt >= game.collisionEffect.duration) {
+      endGame();
+      return;
+    }
+    game.animationFrame = requestAnimationFrame(updateGame);
+    return;
+  }
+
+  const speedMultiplier = (game.slowUntil > now ? 0.58 : 1) * (game.speedBoostUntil > now ? 1.38 : 1);
   game.speed += delta * 0.11;
-  game.distance += delta * game.speed * 13;
-  game.roadOffset += delta * game.speed * 78;
+  const effectiveSpeed = game.speed * speedMultiplier;
+  game.distance += delta * effectiveSpeed * 13;
+  game.roadOffset += delta * effectiveSpeed * 78;
 
   const buttonDirection = Number(game.holdingRight || game.keys.has("ArrowRight")) - Number(game.holdingLeft || game.keys.has("ArrowLeft"));
   const tiltDirection = Math.max(-1, Math.min(1, game.tilt / 18));
@@ -662,7 +934,11 @@ function updateGame(now) {
   }
 
   game.obstacles.forEach((obstacle) => {
-    obstacle.y += delta * game.speed * 112;
+    obstacle.y += delta * effectiveSpeed * 112;
+    if (obstacle.knocked) {
+      obstacle.x += obstacle.vx * delta;
+      obstacle.rotation += obstacle.rotationSpeed * delta;
+    }
   });
   game.obstacles = game.obstacles.filter((obstacle) => obstacle.y < canvas.height + 80);
 
@@ -672,8 +948,8 @@ function updateGame(now) {
     width: canvas.width * 0.15,
     height: canvas.height * 0.1,
   };
-  const hitObstacle = game.obstacles.some((obstacle) =>
-    rectanglesOverlap(playerBox, {
+  const hitObstacle = game.obstacles.find((obstacle) =>
+    !obstacle.hit && rectanglesOverlap(playerBox, {
       x: obstacle.x,
       y: obstacle.y,
       width: obstacle.size * 0.58,
@@ -686,8 +962,12 @@ function updateGame(now) {
   drawGame();
 
   if (hitObstacle) {
-    endGame();
-    return;
+    handleObstacleHit(hitObstacle, playerBox, now);
+    drawGame();
+    if (game.collisionEffect) {
+      game.animationFrame = requestAnimationFrame(updateGame);
+      return;
+    }
   }
 
   game.animationFrame = requestAnimationFrame(updateGame);
@@ -734,6 +1014,7 @@ carouselDots?.addEventListener("click", (event) => {
   if (!dot) return;
   state.selectedIndex = Number(dot.dataset.dot);
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
+  preloadSelectedRacerImages();
   renderRacers();
   renderCarousel();
 });
@@ -870,6 +1151,8 @@ if (isPollPage) {
 if (isGamePage) {
   state.selectedIndex = getInitialRacerIndex();
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
+  preloadRaceAssets();
+  preloadSelectedRacerImages();
   renderCarousel();
   setControlMode("buttons");
   drawGame();
