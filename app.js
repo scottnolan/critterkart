@@ -180,10 +180,56 @@ function getSupabaseHeaders(extraHeaders = {}) {
   };
 }
 
+function getRacerSlug(racer) {
+  return racer.name
+    .normalize("NFKD")
+    .replace(/[^\x00-\x7F]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function getRacerIndexFromParam(value) {
+  if (!value) return null;
+
+  const numericValue = Number(value);
+  if (Number.isInteger(numericValue) && numericValue >= 0 && numericValue < racers.length) {
+    return numericValue;
+  }
+
+  const requestedSlug = value
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const matchingIndex = racers.findIndex((racer) => getRacerSlug(racer) === requestedSlug);
+  if (matchingIndex >= 0) return matchingIndex;
+
+  const sluggedValue = getRacerSlug({ name: value });
+  const matchingNameIndex = racers.findIndex((racer) => getRacerSlug(racer) === sluggedValue);
+  return matchingNameIndex >= 0 ? matchingNameIndex : null;
+}
+
+function getRacerUrl(index) {
+  const racerIndex = Number.isInteger(index) && index >= 0 && index < racers.length ? index : 0;
+  return `./race.html?racer=${encodeURIComponent(getRacerSlug(racers[racerIndex]))}`;
+}
+
+function replaceCurrentRacerUrl(index) {
+  if (!isGamePage) return;
+  const nextUrl = getRacerUrl(index);
+  const currentUrl = `${window.location.pathname}${window.location.search}`;
+  const resolvedNextPath = new URL(nextUrl, window.location.href);
+  const nextPath = `${resolvedNextPath.pathname}${resolvedNextPath.search}`;
+  if (currentUrl !== nextPath) {
+    window.history.replaceState(null, "", nextUrl);
+  }
+}
+
 function getInitialRacerIndex() {
   const params = new URLSearchParams(window.location.search);
-  const fromQuery = Number(params.get("racer"));
-  if (Number.isInteger(fromQuery) && fromQuery >= 0 && fromQuery < racers.length) {
+  const fromQuery = getRacerIndexFromParam(params.get("racer"));
+  if (fromQuery !== null) {
     return fromQuery;
   }
 
@@ -358,7 +404,7 @@ function renderResults() {
 function goToRace(index = state.selectedIndex) {
   const racerIndex = Number.isInteger(index) && index >= 0 && index < racers.length ? index : 0;
   localStorage.setItem(selectedRacerKey, String(racerIndex));
-  window.location.href = `./race.html?racer=${racerIndex}`;
+  window.location.href = getRacerUrl(racerIndex);
 }
 
 async function submitVoteToSupabase(index) {
@@ -620,6 +666,7 @@ function changeKart(direction) {
   const previousIndex = state.selectedIndex;
   state.selectedIndex = (state.selectedIndex + direction + racers.length) % racers.length;
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
+  replaceCurrentRacerUrl(state.selectedIndex);
   preloadSelectedRacerImages();
   renderRacers();
   const wrappedForward = previousIndex === racers.length - 1 && state.selectedIndex === 0;
@@ -1171,6 +1218,7 @@ carouselDots?.addEventListener("click", (event) => {
   if (!dot) return;
   state.selectedIndex = Number(dot.dataset.dot);
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
+  replaceCurrentRacerUrl(state.selectedIndex);
   preloadSelectedRacerImages();
   renderRacers();
   renderCarousel(true);
@@ -1316,6 +1364,7 @@ if (isPollPage) {
 if (isGamePage) {
   state.selectedIndex = getInitialRacerIndex();
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
+  replaceCurrentRacerUrl(state.selectedIndex);
   preloadRaceAssets();
   preloadSelectedRacerImages();
   renderCarousel(false);
