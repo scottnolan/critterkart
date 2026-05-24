@@ -60,8 +60,41 @@ a {
   display: block;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .screen-header {
   margin: 10px 0 18px;
+}
+
+.screen-header--center {
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+
+.brand-lockup {
+  display: block;
+  width: min(100%, 320px);
+  height: auto;
+  margin: 0 auto 12px;
+  object-fit: contain;
+}
+
+.brand-lockup--hero {
+  width: min(66vw, 360px);
+  margin-bottom: 2px;
+}
+
+.brand-lockup--small {
+  width: min(42vw, 170px);
 }
 
 .eyebrow {
@@ -83,6 +116,10 @@ h1 {
   margin-bottom: 8px;
   font-size: clamp(2rem, 10vw, 4.8rem);
   line-height: 0.94;
+}
+
+.screen-header--brand h1 {
+  font-size: clamp(2rem, 7vw, 3.6rem);
 }
 
 h2 {
@@ -245,6 +282,10 @@ h2 {
   box-shadow: var(--shadow);
 }
 
+.results-copy {
+  text-align: center;
+}
+
 .results-list {
   display: grid;
   gap: 9px;
@@ -373,7 +414,7 @@ h2 {
 .carousel {
   position: relative;
   gap: 8px;
-  margin: 8px 0 34px;
+  margin: 8px 0 20px;
   touch-action: pan-y;
 }
 
@@ -427,6 +468,10 @@ h2 {
   will-change: transform;
 }
 
+.carousel-track--no-transition {
+  transition: none;
+}
+
 .carousel-card {
   flex: 0 0 min(72%, 390px);
   min-width: 0;
@@ -466,7 +511,7 @@ h2 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 7px;
-  margin: 16px 0 34px;
+  margin: 12px 0 18px;
 }
 
 .dot-button {
@@ -493,6 +538,7 @@ h2 {
   border: 1px solid rgba(101, 113, 116, 0.22);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.62);
+  text-align: center;
 }
 
 .control-card h2,
@@ -510,13 +556,17 @@ h2 {
 }
 
 .segmented-control {
-  display: grid;
+  display: none;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
   padding: 4px;
   border: 2px solid var(--line);
   border-radius: 8px;
   background: #f0eadc;
+}
+
+.has-multiple-control-options .segmented-control {
+  display: grid;
 }
 
 .segment {
@@ -541,7 +591,7 @@ h2 {
 
 .hud {
   display: grid;
-  grid-template-columns: 1fr 1fr 74px 74px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 58px;
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -567,18 +617,72 @@ h2 {
 }
 
 .hud-button {
+  display: grid;
   min-height: 58px;
+  place-items: center;
   color: var(--ink);
-  font-size: 0.88rem;
   font-weight: 900;
   touch-action: manipulation;
 }
 
+.hud-icon-button {
+  padding: 0;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.race-stage {
+  position: relative;
+  width: min(100%, calc((100svh - 190px) * 0.6667));
+  margin: 0 auto;
+}
+
+.pause-menu {
+  position: absolute;
+  inset: 4px;
+  z-index: 5;
+  display: none;
+  align-content: center;
+  gap: 12px;
+  margin: 0;
+  padding: clamp(18px, 5vw, 34px);
+  border-radius: 4px;
+  background: var(--green);
+  color: #123000;
+}
+
+.pause-menu h2,
+.pause-menu p {
+  margin-bottom: 0;
+}
+
+.pause-menu h2 {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.pause-menu p {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.pause-menu .hud-button {
+  border-color: var(--green-dark);
+  background: #fff;
+  box-shadow: 0 6px 0 var(--green-dark);
+}
+
+.play-panel--paused .pause-menu {
+  display: grid;
+}
+
 #gameCanvas {
   display: block;
-  width: min(100%, calc((100svh - 190px) * 0.6667));
+  width: 100%;
   height: auto;
-  margin: 0 auto;
+  margin: 0;
   aspect-ratio: 2 / 3;
   border: 4px solid #1c2325;
   border-radius: 8px;
@@ -588,6 +692,10 @@ h2 {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+}
+
+.orientation-lock {
+  display: none;
 }
 
 .countdown-overlay {
@@ -714,7 +822,7 @@ h2 {
 }
 
 .touch-controls {
-  display: grid;
+  display: none;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   margin-top: 14px;
@@ -739,7 +847,7 @@ h2 {
 }
 
 .touch-controls--hidden {
-  display: none;
+  display: none !important;
 }
 
 .finish-card {
@@ -748,6 +856,7 @@ h2 {
   align-content: center;
   padding: 18px;
   border-radius: 8px;
+  text-align: center;
 }
 
 .final-score {
@@ -787,7 +896,7 @@ h2 {
   }
 
   .hud {
-    grid-template-columns: 1fr 1fr 92px 92px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 64px;
   }
 
   .game-screen {
@@ -798,6 +907,126 @@ h2 {
 
 @media (min-width: 920px) {
   .app-shell--game {
-    width: min(100%, 760px);
+    width: min(100%, 1280px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+  body {
+    overflow: hidden;
+  }
+
+  .orientation-lock {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--bg);
+    color: var(--ink);
+    text-align: center;
+  }
+
+  .orientation-lock strong {
+    font-size: clamp(1.8rem, 8vw, 3.2rem);
+    line-height: 0.95;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 900px) and (min-height: 600px) {
+  .app-shell--game {
+    --race-stage-width: min(calc((100svh - 28px) * 0.6667), calc(100vw - 390px));
+    --side-ui-left: calc(50% + var(--race-stage-width) / 2 + 18px);
+    --side-ui-width: min(320px, calc(50vw - var(--race-stage-width) / 2 - 36px));
+    width: min(100%, 1360px);
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .game-screen {
+    width: 100%;
+  }
+
+  #playPanel.game-panel--active {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: "canvas";
+    align-items: start;
+    justify-items: center;
+  }
+
+  .hud {
+    position: absolute;
+    top: 0;
+    left: var(--side-ui-left);
+    width: var(--side-ui-width);
+    grid-template-columns: 1fr;
+    margin-bottom: 0;
+  }
+
+  .hud strong {
+    font-size: clamp(1.45rem, 2.8vw, 2.4rem);
+  }
+
+  .hud-button {
+    min-height: 64px;
+  }
+
+  .pause-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .race-stage {
+    grid-area: canvas;
+    width: var(--race-stage-width);
+  }
+}
+
+@media (pointer: coarse) {
+  .touch-controls {
+    display: grid;
+  }
+
+  .segment--tilt {
+    display: block;
+  }
+}
+
+@media (pointer: fine) {
+  .segment--tilt {
+    display: none;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 900px) and (min-height: 600px) and (pointer: coarse) {
+  .app-shell--game {
+    --race-stage-width: min(calc((100svh - 28px) * 0.6667), calc(100vw - 300px));
+    --side-ui-width: min(240px, calc(50vw - var(--race-stage-width) / 2 - 28px));
+  }
+
+  #playPanel.game-panel--active {
+    grid-template-columns: 1fr;
+    grid-template-areas: "canvas";
+  }
+
+  .race-stage {
+    width: var(--race-stage-width);
+  }
+
+  .touch-controls {
+    position: absolute;
+    top: 420px;
+    left: var(--side-ui-left);
+    width: var(--side-ui-width);
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 0;
+  }
+
+  .drive-button {
+    min-height: 58px;
+    font-size: 2rem;
   }
 }

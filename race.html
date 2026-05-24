@@ -10,9 +10,9 @@
     <main class="app-shell app-shell--game">
       <section id="gamePage" class="screen screen--active game-screen" aria-labelledby="gameTitle">
         <div id="startPanel" class="game-panel game-panel--active">
-          <div class="screen-header">
-            <p class="eyebrow">Ready set</p>
-            <h1 id="gameTitle">Critter Kart</h1>
+          <div class="screen-header screen-header--center screen-header--brand">
+            <img class="brand-lockup brand-lockup--hero" src="./assets/brand/CritterKart-Lockup-01.png" alt="Critter Kart" />
+            <h1 id="gameTitle" class="visually-hidden">Critter Kart</h1>
           </div>
 
           <div class="carousel" aria-label="Choose kart">
@@ -33,7 +33,7 @@
             </div>
             <div class="segmented-control" aria-label="Control mode">
               <button id="buttonsMode" class="segment segment--active" type="button">Buttons</button>
-              <button id="tiltMode" class="segment" type="button">Tilt</button>
+              <button id="tiltMode" class="segment segment--tilt" type="button">Tilt</button>
             </div>
           </div>
         </div>
@@ -48,10 +48,23 @@
               <span>Best</span>
               <strong id="bestText">0 m</strong>
             </div>
-            <button id="pauseGame" class="hud-button" type="button">Pause</button>
-            <button id="gameMenu" class="hud-button" type="button">Menu</button>
+            <button id="pauseGame" class="hud-button hud-icon-button" type="button" aria-label="Pause race" title="Pause race">⏸</button>
           </div>
-          <canvas id="gameCanvas" width="720" height="1080" aria-label="Critter Kart racing game"></canvas>
+          <div class="race-stage">
+            <canvas id="gameCanvas" width="720" height="1080" aria-label="Critter Kart racing game"></canvas>
+            <div class="pause-menu" aria-label="Paused race options">
+              <div>
+                <h2>Paused</h2>
+                <p id="pauseControlHint">Use the left and right buttons to steer.</p>
+              </div>
+              <div class="segmented-control pause-control-mode" aria-label="Race control mode">
+                <button id="playButtonsMode" class="segment segment--active" type="button">Buttons</button>
+                <button id="playTiltMode" class="segment segment--tilt" type="button">Tilt</button>
+              </div>
+              <button id="restartRace" class="hud-button" type="button">Restart</button>
+              <button id="changeRaceCar" class="hud-button" type="button">Change car</button>
+            </div>
+          </div>
           <div id="touchControls" class="touch-controls">
             <button id="leftControl" class="drive-button" type="button" aria-label="Move left">‹</button>
             <button id="rightControl" class="drive-button" type="button" aria-label="Move right">›</button>
@@ -77,6 +90,9 @@
             <img id="countdownKart" class="countdown-kart" alt="" />
             <span id="countdownNumber" class="countdown-number">3</span>
           </div>
+        </div>
+        <div class="orientation-lock" aria-hidden="true">
+          <strong>Rotate to portrait</strong>
         </div>
       </section>
     </main>

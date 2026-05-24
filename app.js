@@ -1,8 +1,8 @@
 const racers = [
+  { name: "🐵 Bananas McChimp", color: "#1d2528", accent: "#f9f7ef", votes: 16, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Bananas-McChimp.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Bananas-McChimp.png" },
   { name: "🦚 Pierre Plume", color: "#d94135", accent: "#f2b93b", votes: 18, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Pierre-Plume.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Pierre-Plume.png" },
   { name: "🐱 Lady Whiskerfluff", color: "#2f9e68", accent: "#ffd34f", votes: 22, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Lady-Whiskerfluff.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Lady-Whiskerfluff.png" },
   { name: "🐠 Captain Bubbles", color: "#f9f7ef", accent: "#1d2528", votes: 15, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Captain-Bubbles.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Captain-Bubbles.png" },
-  { name: "🐵 Bananas McChimp", color: "#1d2528", accent: "#f9f7ef", votes: 16, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Bananas-McChimp.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Bananas-McChimp.png" },
   { name: "🐸 Lily Flip Ribbit", color: "#f2b93b", accent: "#1d2528", votes: 20, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Lily-Flip-Ribbit.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Lily-Flip-Ribbit.png" },
   { name: "🐨 Snoozer & Gum", color: "#2473d4", accent: "#8bd3ff", votes: 17, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Snoozer+Gum.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Snoozer+Gum.png" },
   { name: "🐶 Chief Spotterson", color: "#47a447", accent: "#f57d2a", votes: 24, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Chief-Spotterson.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Chief-Spotterson.png" },
@@ -26,7 +26,8 @@ const obstacleAssets = [
     frequency: "medium",
     weight: 3,
     color: "#1d2528",
-    image: "",
+    image: "./assets/obstacles/Obstacle-Oil.png",
+    size: 126,
   },
   {
     type: "brick",
@@ -34,9 +35,18 @@ const obstacleAssets = [
     effect: "crash",
     frequency: "common",
     weight: 6,
-    color: "#d94135",
-    colors: ["#d94135", "#f2b93b", "#2473d4", "#2f9e68", "#ffffff"],
-    image: "",
+    size: 126,
+    shapes: [
+      { src: "./assets/obstacles/Brick-2x2.svg", hitboxWidth: 0.36, hitboxHeight: 0.36 },
+      { src: "./assets/obstacles/Brick-2x4.svg", hitboxWidth: 0.62, hitboxHeight: 0.36 },
+    ],
+    colorVariants: [
+      { base: "#f4413a", highlight: "#f8887a", shadow: "#c60204" },
+      { base: "#f2b93b", highlight: "#ffe17a", shadow: "#c47a12" },
+      { base: "#2473d4", highlight: "#80b6ff", shadow: "#174d92" },
+      { base: "#2f9e68", highlight: "#7fdca7", shadow: "#176c46" },
+      { base: "#ffffff", highlight: "#ffffff", shadow: "#cfd7dc" },
+    ],
   },
   {
     type: "cone",
@@ -45,7 +55,8 @@ const obstacleAssets = [
     frequency: "medium",
     weight: 3,
     color: "#f57d2a",
-    image: "",
+    image: "./assets/obstacles/Obstacle-TrafficCone.png",
+    size: 126,
   },
   {
     type: "jump",
@@ -54,15 +65,28 @@ const obstacleAssets = [
     frequency: "rare",
     weight: 1,
     color: "#8bd3ff",
-    image: "",
+    image: "./assets/obstacles/Obstacle-Jump.png",
+    size: 126,
   },
 ];
 
 const trackArt = {
-  image: "",
+  image: "./assets/tracks/track-01.png",
 };
 
+const roadLayout = {
+  x: 0.13,
+  width: 0.74,
+};
+const kartLayout = {
+  width: 0.38,
+  height: 0.2,
+  hitboxWidth: 0.13,
+  hitboxHeight: 0.08,
+};
 const imageCache = new Map();
+const svgTemplateCache = new Map();
+const tintedSvgCache = new Map();
 const bestDistanceKey = "critterKartBestDistance";
 const selectedRacerKey = "critterKartSelectedRacer";
 const voteSubmittedKey = "critterKartVoteSubmitted";
@@ -92,6 +116,7 @@ const state = {
     holdingLeft: false,
     holdingRight: false,
     tilt: 0,
+    steerRotation: 0,
     animationFrame: 0,
     countdownActive: false,
   },
@@ -116,7 +141,10 @@ const startGameButton = document.querySelector("#startGame");
 const backToVote = document.querySelector("#backToVote");
 const buttonsMode = document.querySelector("#buttonsMode");
 const tiltMode = document.querySelector("#tiltMode");
+const playButtonsMode = document.querySelector("#playButtonsMode");
+const playTiltMode = document.querySelector("#playTiltMode");
 const controlHint = document.querySelector("#controlHint");
+const pauseControlHint = document.querySelector("#pauseControlHint");
 const startPanel = document.querySelector("#startPanel");
 const playPanel = document.querySelector("#playPanel");
 const endPanel = document.querySelector("#endPanel");
@@ -125,7 +153,8 @@ const ctx = canvas?.getContext("2d");
 const distanceText = document.querySelector("#distanceText");
 const bestText = document.querySelector("#bestText");
 const pauseGameButton = document.querySelector("#pauseGame");
-const gameMenuButton = document.querySelector("#gameMenu");
+const restartRaceButton = document.querySelector("#restartRace");
+const changeRaceCarButton = document.querySelector("#changeRaceCar");
 const finalScore = document.querySelector("#finalScore");
 const retryGame = document.querySelector("#retryGame");
 const chooseKart = document.querySelector("#chooseKart");
@@ -204,7 +233,70 @@ function preloadImage(src) {
   });
 }
 
-function preloadRaceAssets() {
+function loadSvgTemplate(src) {
+  if (!src) return Promise.resolve("");
+  if (!svgTemplateCache.has(src)) {
+    svgTemplateCache.set(
+      src,
+      fetch(src)
+        .then((response) => {
+          if (!response.ok) throw new Error(`Failed to load SVG template ${src}`);
+          return response.text();
+        })
+        .catch((error) => {
+          console.warn(error);
+          return "";
+        }),
+    );
+  }
+  return svgTemplateCache.get(src);
+}
+
+async function getTintedSvgImage(src, colors) {
+  if (!src || !colors) return undefined;
+  const cacheKey = getTintedSvgCacheKey(src, colors);
+  if (tintedSvgCache.has(cacheKey)) {
+    return getAssetImage(tintedSvgCache.get(cacheKey));
+  }
+
+  const template = await loadSvgTemplate(src);
+  if (!template) return undefined;
+
+  const tintedSvg = template
+    .replaceAll("#f4413a", colors.base)
+    .replaceAll("#f8887a", colors.highlight)
+    .replaceAll("#c60204", colors.shadow);
+  const imageSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(tintedSvg)}`;
+  tintedSvgCache.set(cacheKey, imageSrc);
+  return getAssetImage(imageSrc);
+}
+
+function getTintedSvgCacheKey(src, colors) {
+  return `${src}|${colors.base}|${colors.highlight}|${colors.shadow}`;
+}
+
+function getCachedTintedSvgSrc(src, colors) {
+  return tintedSvgCache.get(getTintedSvgCacheKey(src, colors)) || "";
+}
+
+async function preloadBrickAssets() {
+  const brickAssets = obstacleAssets.filter((asset) => asset.type === "brick");
+  const imagePromises = [];
+
+  for (const asset of brickAssets) {
+    for (const shape of asset.shapes || []) {
+      const shapeSrc = typeof shape === "string" ? shape : shape.src;
+      for (const colors of asset.colorVariants || []) {
+        const image = await getTintedSvgImage(shapeSrc, colors);
+        imagePromises.push(preloadImage(image?.src));
+      }
+    }
+  }
+
+  return Promise.all(imagePromises);
+}
+
+async function preloadRaceAssets() {
   const imageSources = new Set();
   racers.forEach((racer) => {
     imageSources.add(racer.heroImage);
@@ -212,7 +304,8 @@ function preloadRaceAssets() {
   });
   obstacleAssets.forEach((asset) => imageSources.add(asset.image));
   imageSources.add(trackArt.image);
-  return Promise.all([...imageSources].filter(Boolean).map(preloadImage));
+  await Promise.all([...imageSources].filter(Boolean).map(preloadImage));
+  return preloadBrickAssets();
 }
 
 function preloadSelectedRacerImages() {
@@ -395,34 +488,49 @@ async function submitSelectedVote() {
   }, 330);
 }
 
-function updateCarouselPosition() {
+function updateCarouselPosition(animate = true) {
   if (!carouselTrack || !carouselViewport) return;
   const activeCard = carouselTrack.querySelector(".carousel-card--active");
   if (!activeCard) return;
 
   const viewportCenter = carouselViewport.clientWidth / 2;
   const activeCenter = activeCard.offsetLeft + activeCard.offsetWidth / 2;
+  carouselTrack.classList.toggle("carousel-track--no-transition", !animate);
   carouselTrack.style.transform = `translateX(${viewportCenter - activeCenter}px)`;
+  if (!animate) {
+    void carouselTrack.offsetWidth;
+    carouselTrack.classList.remove("carousel-track--no-transition");
+  }
 }
 
-function renderCarousel() {
+function carouselCardMarkup(index, clone = "") {
+  const racer = racers[index];
+  return `
+    <div class="carousel-card" data-carousel-racer="${index}" ${clone ? `data-carousel-clone="${clone}" aria-hidden="true"` : ""} style="--kart-color:${racer.color};--kart-accent:${racer.accent}">
+      ${kartMarkup(racer)}
+      <strong>${racer.name}</strong>
+    </div>
+  `;
+}
+
+function renderCarousel(animate = true, activeClone = "") {
   if (!carouselTrack || !carouselDots) return;
   if (!carouselTrack.children.length) {
-    carouselTrack.innerHTML = racers
-      .map((racer, index) => {
-      return `
-        <div class="carousel-card" data-carousel-racer="${index}" style="--kart-color:${racer.color};--kart-accent:${racer.accent}">
-          ${kartMarkup(racer)}
-          <strong>${racer.name}</strong>
-        </div>
-      `;
-    })
-    .join("");
+    const lastIndex = racers.length - 1;
+    carouselTrack.innerHTML = [
+      carouselCardMarkup(lastIndex, "before"),
+      ...racers.map((_, index) => carouselCardMarkup(index)),
+      carouselCardMarkup(0, "after"),
+    ].join("");
   }
 
   carouselTrack.querySelectorAll("[data-carousel-racer]").forEach((card) => {
     const index = Number(card.dataset.carouselRacer);
-    card.classList.toggle("carousel-card--active", index === state.selectedIndex);
+    const clonePosition = card.dataset.carouselClone || "";
+    card.classList.toggle(
+      "carousel-card--active",
+      index === state.selectedIndex && clonePosition === activeClone,
+    );
   });
 
   carouselDots.innerHTML = racers
@@ -432,7 +540,13 @@ function renderCarousel() {
       `,
     )
     .join("");
-  window.requestAnimationFrame(updateCarouselPosition);
+  window.requestAnimationFrame(() => updateCarouselPosition(animate));
+}
+
+function snapCarouselToRealCard() {
+  if (!carouselTrack) return;
+  const finishSnap = () => renderCarousel(false);
+  carouselTrack.addEventListener("transitionend", finishSnap, { once: true });
 }
 
 function setScreen(screen) {
@@ -444,6 +558,17 @@ function setGamePanel(panel) {
   startPanel?.classList.toggle("game-panel--active", panel === "start");
   playPanel?.classList.toggle("game-panel--active", panel === "play");
   endPanel?.classList.toggle("game-panel--active", panel === "end");
+  if (panel !== "play") {
+    playPanel?.classList.remove("play-panel--paused");
+  }
+}
+
+function setPauseButtonState(paused) {
+  if (!pauseGameButton) return;
+  playPanel?.classList.toggle("play-panel--paused", paused);
+  pauseGameButton.textContent = paused ? "▶" : "⏸";
+  pauseGameButton.setAttribute("aria-label", paused ? "Resume race" : "Pause race");
+  pauseGameButton.title = paused ? "Resume race" : "Pause race";
 }
 
 function focusFirstMenuOption() {
@@ -459,15 +584,26 @@ function focusFirstMenuOption() {
 
 function setControlMode(mode) {
   state.controlMode = mode;
-  buttonsMode?.classList.toggle("segment--active", mode === "buttons");
-  tiltMode?.classList.toggle("segment--active", mode === "tilt");
-  touchControls?.classList.toggle("touch-controls--hidden", mode === "tilt");
-  if (controlHint) {
-    controlHint.textContent =
-    mode === "tilt"
-      ? "Tilt your phone left and right during the race."
-      : "Use the left and right buttons during the race.";
+  const hasTiltOption = window.matchMedia("(pointer: coarse)").matches;
+  if (!hasTiltOption && mode === "tilt") {
+    state.controlMode = "buttons";
   }
+  const currentMode = state.controlMode;
+  buttonsMode?.classList.toggle("segment--active", currentMode === "buttons");
+  tiltMode?.classList.toggle("segment--active", currentMode === "tilt");
+  playButtonsMode?.classList.toggle("segment--active", currentMode === "buttons");
+  playTiltMode?.classList.toggle("segment--active", currentMode === "tilt");
+  document.documentElement.classList.toggle("has-multiple-control-options", hasTiltOption);
+  touchControls?.classList.toggle("touch-controls--hidden", currentMode === "tilt");
+  const helpText = currentMode === "tilt"
+    ? "Tilt your device left and right to steer."
+    : hasTiltOption
+      ? "Tap and hold left or right to steer."
+      : "Use the arrow keys to steer.";
+  if (controlHint) {
+    controlHint.textContent = helpText;
+  }
+  if (pauseControlHint) pauseControlHint.textContent = helpText;
 }
 
 function requestTiltPermission() {
@@ -481,11 +617,15 @@ function requestTiltPermission() {
 }
 
 function changeKart(direction) {
+  const previousIndex = state.selectedIndex;
   state.selectedIndex = (state.selectedIndex + direction + racers.length) % racers.length;
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
   preloadSelectedRacerImages();
   renderRacers();
-  renderCarousel();
+  const wrappedForward = previousIndex === racers.length - 1 && state.selectedIndex === 0;
+  const wrappedBackward = previousIndex === 0 && state.selectedIndex === racers.length - 1;
+  renderCarousel(true, wrappedForward ? "after" : wrappedBackward ? "before" : "");
+  if (wrappedForward || wrappedBackward) snapCarouselToRealCard();
 }
 
 function resetGame(startRunning = true) {
@@ -505,7 +645,8 @@ function resetGame(startRunning = true) {
   game.jumpUntil = 0;
   game.speedBoostUntil = 0;
   game.tilt = 0;
-  if (pauseGameButton) pauseGameButton.textContent = "Pause";
+  game.steerRotation = 0;
+  setPauseButtonState(false);
   distanceText.textContent = "0 m";
   bestText.textContent = `${Math.round(game.best)} m`;
 }
@@ -543,14 +684,22 @@ async function playRaceCountdown() {
   countdownOverlay.hidden = true;
 }
 
+function lockPhonePortraitOrientation() {
+  const isPhoneLandscape = window.matchMedia("(orientation: landscape) and (max-height: 560px) and (pointer: coarse)").matches;
+  if (!isPhoneLandscape || !screen.orientation?.lock) return;
+  screen.orientation.lock("portrait").catch(() => {});
+}
+
 async function startGame() {
   if (state.game.countdownActive) return;
+  lockPhonePortraitOrientation();
   state.game.countdownActive = true;
   cancelAnimationFrame(state.game.animationFrame);
   resetGame(false);
   setGamePanel("play");
   startGameButton?.blur();
   drawGame();
+  await preloadRaceAssets();
   await preloadSelectedRacerImages();
   await playRaceCountdown();
   state.game.countdownActive = false;
@@ -578,7 +727,7 @@ function pauseGame() {
   const game = state.game;
   if (!game.running || game.paused) return;
   game.paused = true;
-  if (pauseGameButton) pauseGameButton.textContent = "Resume";
+  setPauseButtonState(true);
   cancelAnimationFrame(game.animationFrame);
 }
 
@@ -587,7 +736,7 @@ function resumeGame() {
   if (!game.running || !game.paused) return;
   game.paused = false;
   game.lastTime = performance.now();
-  if (pauseGameButton) pauseGameButton.textContent = "Pause";
+  setPauseButtonState(false);
   game.animationFrame = requestAnimationFrame(updateGame);
 }
 
@@ -609,7 +758,7 @@ function returnToGameMenu() {
   game.keys.clear();
   cancelAnimationFrame(game.animationFrame);
   if (countdownOverlay) countdownOverlay.hidden = true;
-  if (pauseGameButton) pauseGameButton.textContent = "Pause";
+  setPauseButtonState(false);
   renderCarousel();
   setGamePanel("start");
   focusFirstMenuOption();
@@ -780,8 +929,8 @@ function drawCollisionEffect(effect) {
 function drawGame() {
   const { width, height } = canvas;
   const game = state.game;
-  const roadX = width * 0.18;
-  const roadW = width * 0.64;
+  const roadX = width * roadLayout.x;
+  const roadW = width * roadLayout.width;
   const racer = racers[state.selectedIndex];
 
   const trackImage = getAssetImage(trackArt.image);
@@ -816,8 +965,8 @@ function drawGame() {
     : 0;
   const spinRotation = game.collisionEffect?.type === "spin" ? collisionProgress * Math.PI * 5 : 0;
   const crashRotation = game.collisionEffect?.type === "crash" ? Math.sin(collisionProgress * Math.PI * 8) * 0.12 : 0;
-  drawKart(playerX, playerY - jumpLift, width * 0.32, height * 0.17, racer, {
-    rotation: spinRotation + crashRotation,
+  drawKart(playerX, playerY - jumpLift, width * kartLayout.width, height * kartLayout.height, racer, {
+    rotation: game.steerRotation + spinRotation + crashRotation,
     scale: jumpScale,
   });
   drawCollisionEffect(game.collisionEffect);
@@ -834,20 +983,26 @@ function chooseObstacleAsset() {
 
 function spawnObstacle() {
   const { width } = canvas;
-  const roadX = width * 0.18;
-  const roadW = width * 0.64;
+  const roadX = width * roadLayout.x;
+  const roadW = width * roadLayout.width;
   const lane = Math.floor(Math.random() * 3);
   const laneX = roadX + roadW * (0.2 + lane * 0.3);
   const asset = chooseObstacleAsset();
-  const color = asset.colors?.[Math.floor(Math.random() * asset.colors.length)] || asset.color;
+  const brickColors = asset.colorVariants?.[Math.floor(Math.random() * asset.colorVariants.length)];
+  const brickShape = asset.shapes?.[Math.floor(Math.random() * asset.shapes.length)];
+  const brickShapeSrc = typeof brickShape === "string" ? brickShape : brickShape?.src;
+  const color = brickColors?.base || asset.color;
+  const obstacleSize = asset.size || 54 + Math.random() * 18;
   state.game.obstacles.push({
     type: asset.type,
     effect: asset.effect,
     x: laneX,
-    y: -40,
-    size: 54 + Math.random() * 18,
+    y: -obstacleSize,
+    size: obstacleSize,
     color,
-    image: asset.image,
+    image: brickShapeSrc && brickColors ? getCachedTintedSvgSrc(brickShapeSrc, brickColors) || brickShapeSrc : asset.image,
+    hitboxWidth: brickShape?.hitboxWidth || asset.hitboxWidth || 0.58,
+    hitboxHeight: brickShape?.hitboxHeight || asset.hitboxHeight || 0.58,
     rotation: asset.type === "brick" ? Math.random() * Math.PI : 0,
     hit: false,
   });
@@ -894,7 +1049,6 @@ function handleObstacleHit(obstacle, playerBox, now) {
   if (obstacle.effect === "jump") {
     state.game.jumpUntil = now + 620;
     state.game.speedBoostUntil = now + 1400;
-    obstacle.y = canvas.height + 120;
   }
 }
 
@@ -924,6 +1078,9 @@ function updateGame(now) {
   const buttonDirection = Number(game.holdingRight || game.keys.has("ArrowRight")) - Number(game.holdingLeft || game.keys.has("ArrowLeft"));
   const tiltDirection = Math.max(-1, Math.min(1, game.tilt / 18));
   const direction = state.controlMode === "tilt" ? tiltDirection : buttonDirection;
+  const activeSteerDirection = Math.abs(direction) > 0.05 ? direction : 0;
+  const targetSteerRotation = activeSteerDirection * (Math.PI / 12);
+  game.steerRotation += (targetSteerRotation - game.steerRotation) * Math.min(1, delta * 14);
   game.targetX = Math.max(0.08, Math.min(0.92, game.targetX + direction * delta * 1.35));
   game.playerX += (game.targetX - game.playerX) * Math.min(1, delta * 16);
 
@@ -943,17 +1100,17 @@ function updateGame(now) {
   game.obstacles = game.obstacles.filter((obstacle) => obstacle.y < canvas.height + 80);
 
   const playerBox = {
-    x: canvas.width * (0.18 + game.playerX * 0.64),
+    x: canvas.width * (roadLayout.x + game.playerX * roadLayout.width),
     y: canvas.height * 0.89,
-    width: canvas.width * 0.15,
-    height: canvas.height * 0.1,
+    width: canvas.width * kartLayout.hitboxWidth,
+    height: canvas.height * kartLayout.hitboxHeight,
   };
   const hitObstacle = game.obstacles.find((obstacle) =>
     !obstacle.hit && rectanglesOverlap(playerBox, {
       x: obstacle.x,
       y: obstacle.y,
-      width: obstacle.size * 0.58,
-      height: obstacle.size * 0.58,
+      width: obstacle.size * obstacle.hitboxWidth,
+      height: obstacle.size * obstacle.hitboxHeight,
     }),
   );
 
@@ -1016,7 +1173,7 @@ carouselDots?.addEventListener("click", (event) => {
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
   preloadSelectedRacerImages();
   renderRacers();
-  renderCarousel();
+  renderCarousel(true);
 });
 
 carouselTrack?.addEventListener("pointerdown", (event) => {
@@ -1036,13 +1193,21 @@ tiltMode?.addEventListener("click", async () => {
     setControlMode("tilt");
   }
 });
+playButtonsMode?.addEventListener("click", () => setControlMode("buttons"));
+playTiltMode?.addEventListener("click", async () => {
+  const permission = await requestTiltPermission();
+  if (permission === "granted") {
+    setControlMode("tilt");
+  }
+});
 
 startGameButton?.addEventListener("click", startGame);
 pauseGameButton?.addEventListener("click", togglePause);
-gameMenuButton?.addEventListener("click", returnToGameMenu);
+restartRaceButton?.addEventListener("click", startGame);
+changeRaceCarButton?.addEventListener("click", returnToGameMenu);
 retryGame?.addEventListener("click", startGame);
 chooseKart?.addEventListener("click", () => {
-  renderCarousel();
+  renderCarousel(false);
   setGamePanel("start");
   focusFirstMenuOption();
 });
@@ -1127,7 +1292,7 @@ window.addEventListener("keyup", (event) => {
   state.game.keys.delete(event.key);
 });
 
-window.addEventListener("resize", updateCarouselPosition);
+window.addEventListener("resize", () => updateCarouselPosition(false));
 
 window.addEventListener("deviceorientation", (event) => {
   if (typeof event.gamma === "number") {
@@ -1153,7 +1318,7 @@ if (isGamePage) {
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
   preloadRaceAssets();
   preloadSelectedRacerImages();
-  renderCarousel();
+  renderCarousel(false);
   setControlMode("buttons");
   drawGame();
   focusFirstMenuOption();
