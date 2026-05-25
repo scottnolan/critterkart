@@ -139,6 +139,11 @@ const skipVote = document.querySelector("#skipVote");
 const resultsPanel = document.querySelector("#resultsPanel");
 const resultsList = document.querySelector("#resultsList");
 const raceCta = document.querySelector("#raceCta");
+const popularityButton = document.querySelector("#popularityButton");
+const playPopularityButton = document.querySelector("#playPopularityButton");
+const popularityModal = document.querySelector("#popularityModal");
+const popularityResults = document.querySelector("#popularityResults");
+const closePopularity = document.querySelector("#closePopularity");
 const carouselTrack = document.querySelector("#carouselTrack");
 const carouselViewport = document.querySelector("#carouselViewport");
 const carouselDots = document.querySelector("#carouselDots");
@@ -385,8 +390,8 @@ function renderRacers() {
   voteSubmitPanel?.classList.toggle("vote-submit-panel--visible", !submitVote.disabled);
 }
 
-function renderResults() {
-  if (!resultsList) return;
+function renderResults(targetList = resultsList, limit = 6) {
+  if (!targetList) return;
   const ranked = racers
     .map((racer, index) => ({
       ...racer,
@@ -395,8 +400,8 @@ function renderResults() {
     .sort((a, b) => b.votes - a.votes);
   const maxVotes = Math.max(1, ...ranked.map((racer) => racer.votes));
 
-  resultsList.innerHTML = ranked
-    .slice(0, 6)
+  targetList.innerHTML = ranked
+    .slice(0, limit)
     .map(
       (racer, index) => `
         <div class="result-row">
@@ -405,10 +410,15 @@ function renderResults() {
             <span></span>
           </div>
           <span class="result-label">${racer.name}</span>
+          <span class="result-count">${racer.votes}</span>
         </div>
       `,
     )
     .join("");
+}
+
+function renderPopularityResults() {
+  renderResults(popularityResults, racers.length);
 }
 
 function goToRace(index = state.selectedIndex) {
@@ -614,6 +624,7 @@ function setGamePanel(panel) {
   startPanel?.classList.toggle("game-panel--active", panel === "start");
   playPanel?.classList.toggle("game-panel--active", panel === "play");
   endPanel?.classList.toggle("game-panel--active", panel === "end");
+  gamePage?.classList.toggle("game-screen--playing", panel === "play");
   if (panel !== "play") {
     playPanel?.classList.remove("play-panel--paused");
     stopPauseTips();
@@ -652,6 +663,32 @@ function setPauseButtonState(paused) {
   } else {
     stopPauseTips();
   }
+}
+
+async function openPopularityModal() {
+  if (!popularityModal) return;
+  if (state.game.running && !state.game.paused) {
+    pauseGame();
+  }
+  renderPopularityResults();
+  popularityModal.hidden = false;
+  popularityButton?.setAttribute("aria-expanded", "true");
+  playPopularityButton?.setAttribute("aria-expanded", "true");
+  closePopularity?.focus({ preventScroll: true });
+  try {
+    await syncVoteTotalsFromSupabase();
+    renderPopularityResults();
+  } catch (error) {
+    console.warn(error);
+  }
+}
+
+function closePopularityModal() {
+  if (!popularityModal) return;
+  popularityModal.hidden = true;
+  popularityButton?.setAttribute("aria-expanded", "false");
+  playPopularityButton?.setAttribute("aria-expanded", "false");
+  (playPanel?.classList.contains("game-panel--active") ? playPopularityButton : popularityButton)?.focus({ preventScroll: true });
 }
 
 function focusFirstMenuOption() {
@@ -1297,6 +1334,14 @@ chooseKart?.addEventListener("click", () => {
   setGamePanel("start");
   focusFirstMenuOption();
 });
+popularityButton?.addEventListener("click", openPopularityModal);
+playPopularityButton?.addEventListener("click", openPopularityModal);
+closePopularity?.addEventListener("click", closePopularityModal);
+popularityModal?.addEventListener("click", (event) => {
+  if (event.target === popularityModal) {
+    closePopularityModal();
+  }
+});
 backToVote?.addEventListener("click", () => setScreen("poll"));
 
 function moveFocus(options, direction) {
@@ -1374,6 +1419,10 @@ function handleMenuKeydown(event) {
 }
 
 window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && popularityModal && !popularityModal.hidden) {
+    closePopularityModal();
+    return;
+  }
   if (handleMenuKeydown(event)) return;
   if (
     playPanel?.classList.contains("game-panel--active") &&

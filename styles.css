@@ -205,6 +205,10 @@ h1 {
   font-size: clamp(2rem, 7vw, 3.6rem);
 }
 
+.game-screen .screen-header--brand {
+  padding-top: 44px;
+}
+
 h2 {
   margin-bottom: 8px;
   font-size: 1.3rem;
@@ -261,7 +265,10 @@ h2 {
 .icon-button:focus-visible,
 .segment:focus-visible,
 .drive-button:focus-visible,
-.dot-button:focus-visible {
+.dot-button:focus-visible,
+.popularity-button:focus-visible,
+.hud-popularity-button:focus-visible,
+.modal-close:focus-visible {
   outline: 4px solid rgba(36, 115, 212, 0.35);
   outline-offset: 3px;
 }
@@ -381,7 +388,7 @@ h2 {
 
 .result-row {
   display: grid;
-  grid-template-columns: 28px 1fr auto;
+  grid-template-columns: 28px minmax(72px, 1fr) minmax(0, auto) 42px;
   align-items: center;
   gap: 10px;
   min-height: 40px;
@@ -411,6 +418,13 @@ h2 {
 .result-label {
   font-size: 0.86rem;
   font-weight: 800;
+}
+
+.result-count {
+  justify-self: end;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 900;
 }
 
 .primary-button,
@@ -496,6 +510,82 @@ h2 {
 .game-screen {
   position: relative;
   min-height: 0;
+}
+
+.popularity-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 8;
+  min-height: 42px;
+  padding: 9px 13px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ink);
+  box-shadow: 0 5px 0 rgba(23, 32, 38, 0.18);
+  font-size: 0.88rem;
+  font-weight: 950;
+  line-height: 1;
+  touch-action: manipulation;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
+  background: rgba(23, 32, 38, 0.54);
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-card {
+  width: min(100%, 560px);
+  max-height: min(86svh, 720px);
+  overflow: auto;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 22px 52px rgba(23, 32, 38, 0.22);
+}
+
+.modal-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.modal-header h2,
+.modal-header p {
+  margin-bottom: 0;
+}
+
+.modal-close {
+  display: grid;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  place-items: center;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.popularity-results {
+  margin-bottom: 0;
 }
 
 .game-panel {
@@ -695,7 +785,7 @@ h2 {
 
 .hud {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 58px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 58px minmax(86px, 0.85fr);
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -733,6 +823,16 @@ h2 {
   padding: 0;
   font-size: 1.45rem;
   line-height: 1;
+}
+
+.hud-popularity-button {
+  display: grid;
+  font-size: 0.82rem;
+  line-height: 1.1;
+}
+
+.game-screen--playing > .popularity-button {
+  display: none;
 }
 
 .race-stage {
@@ -1094,7 +1194,7 @@ h2 {
   }
 
   .hud {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 64px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 64px minmax(110px, 0.85fr);
   }
 
   .game-screen {
@@ -1188,6 +1288,10 @@ h2 {
 
   .hud-button {
     min-height: 64px;
+  }
+
+  .hud-popularity-button {
+    display: grid;
   }
 
   .pause-menu {

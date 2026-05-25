@@ -34,6 +34,10 @@
   <body>
     <main class="app-shell app-shell--game">
       <section id="gamePage" class="screen screen--active game-screen" aria-labelledby="gameTitle">
+        <button id="popularityButton" class="popularity-button" type="button" aria-haspopup="dialog">
+          Popularity
+        </button>
+
         <div id="startPanel" class="game-panel game-panel--active">
           <div class="screen-header screen-header--center screen-header--brand">
             <img class="brand-lockup brand-lockup--hero" src="./assets/brand/CritterKart-Lockup-01.png" alt="Critter Kart" />
@@ -74,6 +78,9 @@
               <strong id="bestText">0 m</strong>
             </div>
             <button id="pauseGame" class="hud-button hud-icon-button" type="button" aria-label="Pause race" title="Pause race">⏸</button>
+            <button id="playPopularityButton" class="hud-button hud-popularity-button" type="button" aria-haspopup="dialog">
+              Popularity
+            </button>
           </div>
           <div class="race-stage">
             <canvas id="gameCanvas" width="720" height="1080" aria-label="Critter Kart racing game"></canvas>
@@ -120,6 +127,18 @@
           <div class="countdown-stack">
             <img id="countdownKart" class="countdown-kart" alt="" />
             <span id="countdownNumber" class="countdown-number">3</span>
+          </div>
+        </div>
+        <div id="popularityModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="popularityTitle">
+          <div class="modal-card popularity-modal">
+            <div class="modal-header">
+              <div>
+                <p class="eyebrow">Fan vote</p>
+                <h2 id="popularityTitle">Popularity poll</h2>
+              </div>
+              <button id="closePopularity" class="modal-close" type="button" aria-label="Close popularity poll">×</button>
+            </div>
+            <div id="popularityResults" class="results-list popularity-results"></div>
           </div>
         </div>
         <div class="orientation-lock" aria-hidden="true">

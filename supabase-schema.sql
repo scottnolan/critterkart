@@ -26,7 +26,8 @@ for select
 to anon
 using (true);
 
-create or replace view public.racer_vote_totals as
+create or replace view public.racer_vote_totals
+with (security_invoker = true) as
 select
   racer_index,
   count(*)::int as vote_count
