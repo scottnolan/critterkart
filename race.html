@@ -78,16 +78,22 @@
           <div class="race-stage">
             <canvas id="gameCanvas" width="720" height="1080" aria-label="Critter Kart racing game"></canvas>
             <div class="pause-menu" aria-label="Paused race options">
-              <div>
-                <h2>Paused</h2>
-                <p id="pauseControlHint">Use the left and right buttons to steer.</p>
+              <div class="pause-menu__content">
+                <div class="pause-menu__header">
+                  <h2>Pause</h2>
+                </div>
+                <div class="segmented-control pause-control-mode" aria-label="Race control mode">
+                  <button id="playButtonsMode" class="segment segment--active" type="button">Buttons</button>
+                  <button id="playTiltMode" class="segment segment--tilt" type="button">Tilt</button>
+                </div>
+                <button id="playRace" class="hud-button pause-menu__play" type="button">Play</button>
+                <button id="restartRace" class="hud-button" type="button">Restart</button>
+                <button id="changeRaceCar" class="hud-button" type="button">Change car</button>
               </div>
-              <div class="segmented-control pause-control-mode" aria-label="Race control mode">
-                <button id="playButtonsMode" class="segment segment--active" type="button">Buttons</button>
-                <button id="playTiltMode" class="segment segment--tilt" type="button">Tilt</button>
+              <div class="pause-tip-panel">
+                <h3>Tips</h3>
+                <p id="pauseTipText">Use the arrow keys to steer.</p>
               </div>
-              <button id="restartRace" class="hud-button" type="button">Restart</button>
-              <button id="changeRaceCar" class="hud-button" type="button">Change car</button>
             </div>
           </div>
           <div id="touchControls" class="touch-controls">
@@ -121,6 +127,21 @@
         </div>
       </section>
     </main>
+    <aside class="event-banner event-banner--bottom" aria-label="Brick Built Sydney event">
+      <div class="event-banner__inner">
+        <img class="event-banner__image" src="./assets/brand/BrickBuiltSydney.webp" alt="Brick Built Sydney" />
+        <div class="event-banner__copy">
+          <h2>The Biggest LEGO® Fan Event in NSW!</h2>
+          <p>31st May - 1st June 2025</p>
+        </div>
+        <a class="event-banner__button" href="https://www.brickbuilt.sydney" target="_blank" rel="noopener noreferrer">
+          Tickets on sale now
+        </a>
+      </div>
+    </aside>
+    <footer class="site-disclaimer">
+      LEGO® and the LEGO Minifigure are trademarks of the LEGO Group of companies, which does not sponsor, authorize, or endorse this site.
+    </footer>
 
     <script src="./app.js"></script>
   </body>

@@ -90,6 +90,13 @@ const tintedSvgCache = new Map();
 const bestDistanceKey = "critterKartBestDistance";
 const selectedRacerKey = "critterKartSelectedRacer";
 const voteSubmittedKey = "critterKartVoteSubmitted";
+const pauseTips = [
+  "Use the arrow keys to steer.",
+  "Avoid the cones, they slow you down.",
+  "Watch out for bricks.",
+  "Don't spin out in the oil.",
+  "Use the jumps for speed.",
+];
 
 const state = {
   selectedIndex: 0,
@@ -144,7 +151,7 @@ const tiltMode = document.querySelector("#tiltMode");
 const playButtonsMode = document.querySelector("#playButtonsMode");
 const playTiltMode = document.querySelector("#playTiltMode");
 const controlHint = document.querySelector("#controlHint");
-const pauseControlHint = document.querySelector("#pauseControlHint");
+const pauseTipText = document.querySelector("#pauseTipText");
 const startPanel = document.querySelector("#startPanel");
 const playPanel = document.querySelector("#playPanel");
 const endPanel = document.querySelector("#endPanel");
@@ -153,6 +160,7 @@ const ctx = canvas?.getContext("2d");
 const distanceText = document.querySelector("#distanceText");
 const bestText = document.querySelector("#bestText");
 const pauseGameButton = document.querySelector("#pauseGame");
+const playRaceButton = document.querySelector("#playRace");
 const restartRaceButton = document.querySelector("#restartRace");
 const changeRaceCarButton = document.querySelector("#changeRaceCar");
 const finalScore = document.querySelector("#finalScore");
@@ -167,6 +175,8 @@ const countdownNumber = document.querySelector("#countdownNumber");
 const isPollPage = Boolean(racerGrid);
 const isGamePage = Boolean(gamePage);
 let carouselTouchStartX = 0;
+let pauseTipIndex = 0;
+let pauseTipTimer = 0;
 
 function isSupabaseConfigured() {
   return Boolean(supabaseConfig.url && supabaseConfig.anonKey);
@@ -606,7 +616,29 @@ function setGamePanel(panel) {
   endPanel?.classList.toggle("game-panel--active", panel === "end");
   if (panel !== "play") {
     playPanel?.classList.remove("play-panel--paused");
+    stopPauseTips();
   }
+}
+
+function renderPauseTip() {
+  if (!pauseTipText) return;
+  pauseTipText.textContent = pauseTips[pauseTipIndex];
+}
+
+function startPauseTips() {
+  stopPauseTips();
+  pauseTipIndex = 0;
+  renderPauseTip();
+  pauseTipTimer = window.setInterval(() => {
+    pauseTipIndex = (pauseTipIndex + 1) % pauseTips.length;
+    renderPauseTip();
+  }, 3200);
+}
+
+function stopPauseTips() {
+  if (!pauseTipTimer) return;
+  window.clearInterval(pauseTipTimer);
+  pauseTipTimer = 0;
 }
 
 function setPauseButtonState(paused) {
@@ -615,6 +647,11 @@ function setPauseButtonState(paused) {
   pauseGameButton.textContent = paused ? "▶" : "⏸";
   pauseGameButton.setAttribute("aria-label", paused ? "Resume race" : "Pause race");
   pauseGameButton.title = paused ? "Resume race" : "Pause race";
+  if (paused) {
+    startPauseTips();
+  } else {
+    stopPauseTips();
+  }
 }
 
 function focusFirstMenuOption() {
@@ -649,7 +686,6 @@ function setControlMode(mode) {
   if (controlHint) {
     controlHint.textContent = helpText;
   }
-  if (pauseControlHint) pauseControlHint.textContent = helpText;
 }
 
 function requestTiltPermission() {
@@ -776,6 +812,7 @@ function pauseGame() {
   game.paused = true;
   setPauseButtonState(true);
   cancelAnimationFrame(game.animationFrame);
+  playRaceButton?.focus({ preventScroll: true });
 }
 
 function resumeGame() {
@@ -1251,6 +1288,7 @@ playTiltMode?.addEventListener("click", async () => {
 
 startGameButton?.addEventListener("click", startGame);
 pauseGameButton?.addEventListener("click", togglePause);
+playRaceButton?.addEventListener("click", resumeGame);
 restartRaceButton?.addEventListener("click", startGame);
 changeRaceCarButton?.addEventListener("click", returnToGameMenu);
 retryGame?.addEventListener("click", startGame);
@@ -1310,6 +1348,17 @@ function handleMenuKeydown(event) {
         target?.focus();
         return true;
       }
+    }
+  }
+
+  if (playPanel?.classList.contains("game-panel--active") && state.game.paused) {
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      event.preventDefault();
+      moveFocus(
+        [playRaceButton, restartRaceButton, changeRaceCarButton, playButtonsMode, playTiltMode],
+        event.key === "ArrowDown" ? 1 : -1,
+      );
+      return true;
     }
   }
 
