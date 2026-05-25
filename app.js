@@ -272,6 +272,17 @@ function kartMarkup(racer) {
   `;
 }
 
+function getVisibleResultColor(racer) {
+  const color = racer.color.replace("#", "");
+  if (color.length !== 6) return racer.color;
+
+  const red = parseInt(color.slice(0, 2), 16);
+  const green = parseInt(color.slice(2, 4), 16);
+  const blue = parseInt(color.slice(4, 6), 16);
+  const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
+  return brightness > 210 ? racer.accent : racer.color;
+}
+
 function getAssetImage(src) {
   if (!src) return undefined;
   if (!imageCache.has(src)) {
@@ -406,7 +417,7 @@ function renderResults(targetList = resultsList, limit = 6) {
       (racer, index) => `
         <div class="result-row">
           <span class="result-rank">${index + 1}</span>
-          <div class="result-bar" style="--bar-color:${racer.color};--bar-width:${(racer.votes / maxVotes) * 100}%">
+          <div class="result-bar" style="--bar-color:${getVisibleResultColor(racer)};--bar-width:${(racer.votes / maxVotes) * 100}%">
             <span></span>
           </div>
           <span class="result-label">${racer.name}</span>
