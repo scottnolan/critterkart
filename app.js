@@ -1,16 +1,16 @@
 const racers = [
-  { name: "🐵 Bananas McChimp", color: "#1d2528", accent: "#f9f7ef", votes: 16, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Bananas-McChimp.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Bananas-McChimp.png" },
-  { name: "🦚 Pierre Plume", color: "#d94135", accent: "#f2b93b", votes: 18, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Pierre-Plume.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Pierre-Plume.png" },
-  { name: "🐱 Lady Whiskerfluff", color: "#2f9e68", accent: "#ffd34f", votes: 22, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Lady-Whiskerfluff.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Lady-Whiskerfluff.png" },
-  { name: "🐠 Captain Bubbles", color: "#f9f7ef", accent: "#1d2528", votes: 15, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Captain-Bubbles.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Captain-Bubbles.png" },
-  { name: "🐸 Lily Flip Ribbit", color: "#f2b93b", accent: "#1d2528", votes: 20, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Lily-Flip-Ribbit.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Lily-Flip-Ribbit.png" },
-  { name: "🐨 Snoozer & Gum", color: "#2473d4", accent: "#8bd3ff", votes: 17, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Snoozer+Gum.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Snoozer+Gum.png" },
-  { name: "🐶 Chief Spotterson", color: "#47a447", accent: "#f57d2a", votes: 24, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Chief-Spotterson.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Chief-Spotterson.png" },
-  { name: "🐊 Skidjaw Chomp", color: "#d9eef8", accent: "#ffffff", votes: 14, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Skidjaw-Chomp.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Skidjaw-Chomp.png" },
-  { name: "🐬 Turbo Fin", color: "#f57d2a", accent: "#ffcf4a", votes: 21, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Turbo-Fin.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Turbo-Fin.png" },
-  { name: "🐰 C. Hopper", color: "#f8e56a", accent: "#ffffff", votes: 12, heroImage: "./assets/cars/Cars-Hero/Car-Hero-C-Hopper.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-C-Hopper.png" },
-  { name: "🦁 King Leo", color: "#18a7a8", accent: "#174d92", votes: 19, heroImage: "./assets/cars/Cars-Hero/Car-Hero-King-Leo.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-King-Leo.png" },
-  { name: "🦜 Captain Scarlet Squawk", color: "#ffffff", accent: "#d94135", votes: 13, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Captain-Scarlet-Squawk.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Captain-Scarlet-Squawk.png" },
+  { name: "🐵 Bananas McChimp", color: "#1d2528", accent: "#f9f7ef", pollColor: "#ffff00", votes: 16, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Bananas-McChimp.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Bananas-McChimp.png" },
+  { name: "🦚 Pierre Plume", color: "#d94135", accent: "#f2b93b", pollColor: "#68c3e2", votes: 18, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Pierre-Plume.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Pierre-Plume.png" },
+  { name: "🐱 Lady Whiskerfluff", color: "#2f9e68", accent: "#ffd34f", pollColor: "#c8509b", votes: 22, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Lady-Whiskerfluff.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Lady-Whiskerfluff.png" },
+  { name: "🐠 Captain Bubbles", color: "#f9f7ef", accent: "#1d2528", pollColor: "#ca4c0b", votes: 15, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Captain-Bubbles.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Captain-Bubbles.png" },
+  { name: "🐸 Lily Flip Ribbit", color: "#f2b93b", accent: "#1d2528", pollColor: "#e2f99a", votes: 20, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Lily-Flip-Ribbit.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Lily-Flip-Ribbit.png" },
+  { name: "🐨 Snoozer & Gum", color: "#2473d4", accent: "#8bd3ff", pollColor: "#58ab41", votes: 17, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Snoozer+Gum.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Snoozer+Gum.png" },
+  { name: "🐶 Chief Spotterson", color: "#47a447", accent: "#f57d2a", pollColor: "#b40000", votes: 24, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Chief-Spotterson.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Chief-Spotterson.png" },
+  { name: "🐊 Skidjaw Chomp", color: "#d9eef8", accent: "#ffffff", pollColor: "#00852b", votes: 14, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Skidjaw-Chomp.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Skidjaw-Chomp.png" },
+  { name: "🐬 Turbo Fin", color: "#f57d2a", accent: "#ffcf4a", pollColor: "#1e5aa8", votes: 21, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Turbo-Fin.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Turbo-Fin.png" },
+  { name: "🐰 C. Hopper", color: "#f8e56a", accent: "#ffffff", pollColor: "#d67923", votes: 12, heroImage: "./assets/cars/Cars-Hero/Car-Hero-C-Hopper.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-C-Hopper.png" },
+  { name: "🦁 King Leo", color: "#18a7a8", accent: "#174d92", pollColor: "#fcac00", votes: 19, heroImage: "./assets/cars/Cars-Hero/Car-Hero-King-Leo.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-King-Leo.png" },
+  { name: "🦜 Captain Scarlet Squawk", color: "#ffffff", accent: "#d94135", pollColor: "#5f3109", votes: 13, heroImage: "./assets/cars/Cars-Hero/Car-Hero-Captain-Scarlet-Squawk.png", gameImage: "./assets/cars/Cars-TopView/Car-TopView-Captain-Scarlet-Squawk.png" },
 ];
 
 const supabaseConfig = {
@@ -272,17 +272,6 @@ function kartMarkup(racer) {
   `;
 }
 
-function getVisibleResultColor(racer) {
-  const color = racer.color.replace("#", "");
-  if (color.length !== 6) return racer.color;
-
-  const red = parseInt(color.slice(0, 2), 16);
-  const green = parseInt(color.slice(2, 4), 16);
-  const blue = parseInt(color.slice(4, 6), 16);
-  const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
-  return brightness > 210 ? racer.accent : racer.color;
-}
-
 function getAssetImage(src) {
   if (!src) return undefined;
   if (!imageCache.has(src)) {
@@ -417,10 +406,10 @@ function renderResults(targetList = resultsList, limit = 6) {
       (racer, index) => `
         <div class="result-row">
           <span class="result-rank">${index + 1}</span>
-          <div class="result-bar" style="--bar-color:${getVisibleResultColor(racer)};--bar-width:${(racer.votes / maxVotes) * 100}%">
+          <span class="result-label">${racer.name}</span>
+          <div class="result-bar" style="--bar-color:${racer.pollColor};--bar-width:${(racer.votes / maxVotes) * 100}%">
             <span></span>
           </div>
-          <span class="result-label">${racer.name}</span>
           <span class="result-count">${racer.votes}</span>
         </div>
       `,

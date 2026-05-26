@@ -382,19 +382,22 @@ h2 {
 
 .results-list {
   display: grid;
-  gap: 9px;
+  grid-template-columns: 2.4ch minmax(190px, 230px) minmax(150px, 1fr) 3ch;
+  column-gap: 12px;
+  row-gap: 9px;
   margin: 12px 0 16px;
 }
 
 .result-row {
   display: grid;
-  grid-template-columns: 28px minmax(72px, 1fr) minmax(0, auto) 42px;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: 10px;
   min-height: 40px;
 }
 
 .result-rank {
+  justify-self: start;
   font-weight: 900;
 }
 
@@ -416,8 +419,12 @@ h2 {
 }
 
 .result-label {
+  min-width: 0;
+  overflow: hidden;
   font-size: 0.86rem;
   font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .result-count {
@@ -555,6 +562,10 @@ h2 {
   box-shadow: 0 22px 52px rgba(23, 32, 38, 0.22);
 }
 
+.popularity-modal {
+  width: min(100%, 680px);
+}
+
 .modal-header {
   display: flex;
   align-items: start;
@@ -586,6 +597,18 @@ h2 {
 
 .popularity-results {
   margin-bottom: 0;
+}
+
+@media (max-width: 520px) {
+  .results-list {
+    grid-template-columns: 2.2ch minmax(126px, 1fr) minmax(70px, 0.75fr) 2ch;
+    column-gap: 8px;
+  }
+
+  .result-label,
+  .result-count {
+    font-size: 0.78rem;
+  }
 }
 
 .game-panel {
