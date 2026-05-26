@@ -119,6 +119,10 @@ a {
   text-align: center;
 }
 
+body:not(.game-view-has-promo) .game-context-promo {
+  display: none;
+}
+
 .app-shell {
   width: min(100%, 1180px);
   min-height: 100svh;

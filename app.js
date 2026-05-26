@@ -625,6 +625,7 @@ function setGamePanel(panel) {
   playPanel?.classList.toggle("game-panel--active", panel === "play");
   endPanel?.classList.toggle("game-panel--active", panel === "end");
   gamePage?.classList.toggle("game-screen--playing", panel === "play");
+  document.body.classList.toggle("game-view-has-promo", panel === "start");
   if (panel !== "play") {
     playPanel?.classList.remove("play-panel--paused");
     stopPauseTips();
