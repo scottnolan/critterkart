@@ -271,7 +271,6 @@ h2 {
 .drive-button:focus-visible,
 .dot-button:focus-visible,
 .popularity-button:focus-visible,
-.hud-popularity-button:focus-visible,
 .modal-close:focus-visible {
   outline: 4px solid rgba(36, 115, 212, 0.35);
   outline-offset: 3px;
@@ -812,7 +811,7 @@ h2 {
 
 .hud {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 58px minmax(86px, 0.85fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 58px;
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -850,12 +849,6 @@ h2 {
   padding: 0;
   font-size: 1.45rem;
   line-height: 1;
-}
-
-.hud-popularity-button {
-  display: grid;
-  font-size: 0.82rem;
-  line-height: 1.1;
 }
 
 .game-screen--playing > .popularity-button {
@@ -1221,7 +1214,7 @@ h2 {
   }
 
   .hud {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 64px minmax(110px, 0.85fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 64px;
   }
 
   .game-screen {
@@ -1315,10 +1308,6 @@ h2 {
 
   .hud-button {
     min-height: 64px;
-  }
-
-  .hud-popularity-button {
-    display: grid;
   }
 
   .pause-menu {

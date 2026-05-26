@@ -140,7 +140,6 @@ const resultsPanel = document.querySelector("#resultsPanel");
 const resultsList = document.querySelector("#resultsList");
 const raceCta = document.querySelector("#raceCta");
 const popularityButton = document.querySelector("#popularityButton");
-const playPopularityButton = document.querySelector("#playPopularityButton");
 const popularityModal = document.querySelector("#popularityModal");
 const popularityResults = document.querySelector("#popularityResults");
 const closePopularity = document.querySelector("#closePopularity");
@@ -674,7 +673,6 @@ async function openPopularityModal() {
   renderPopularityResults();
   popularityModal.hidden = false;
   popularityButton?.setAttribute("aria-expanded", "true");
-  playPopularityButton?.setAttribute("aria-expanded", "true");
   closePopularity?.focus({ preventScroll: true });
   try {
     await syncVoteTotalsFromSupabase();
@@ -688,8 +686,7 @@ function closePopularityModal() {
   if (!popularityModal) return;
   popularityModal.hidden = true;
   popularityButton?.setAttribute("aria-expanded", "false");
-  playPopularityButton?.setAttribute("aria-expanded", "false");
-  (playPanel?.classList.contains("game-panel--active") ? playPopularityButton : popularityButton)?.focus({ preventScroll: true });
+  popularityButton?.focus({ preventScroll: true });
 }
 
 function focusFirstMenuOption() {
@@ -1336,7 +1333,6 @@ chooseKart?.addEventListener("click", () => {
   focusFirstMenuOption();
 });
 popularityButton?.addEventListener("click", openPopularityModal);
-playPopularityButton?.addEventListener("click", openPopularityModal);
 closePopularity?.addEventListener("click", closePopularityModal);
 popularityModal?.addEventListener("click", (event) => {
   if (event.target === popularityModal) {
