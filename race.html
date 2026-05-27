@@ -34,10 +34,6 @@
   <body class="game-view-has-promo">
     <main class="app-shell app-shell--game">
       <section id="gamePage" class="screen screen--active game-screen" aria-labelledby="gameTitle">
-        <button id="popularityButton" class="popularity-button" type="button" aria-haspopup="dialog">
-          Popularity
-        </button>
-
         <div id="startPanel" class="game-panel game-panel--active">
           <div class="screen-header screen-header--center screen-header--brand">
             <img class="brand-lockup brand-lockup--hero" src="./assets/brand/CritterKart-Lockup-01.png" alt="Critter Kart" />
@@ -53,7 +49,10 @@
           </div>
           <div id="carouselDots" class="carousel-dots" aria-label="Kart carousel pagination"></div>
 
-          <button id="startGame" class="primary-button" type="button">Start race</button>
+          <button id="startGame" class="primary-button" type="button">Start Race</button>
+          <button id="popularityButton" class="popularity-button" type="button" aria-haspopup="dialog">
+            Fan Vote
+          </button>
 
           <div class="control-card">
             <div>
@@ -131,9 +130,9 @@
             <div class="modal-header">
               <div>
                 <p class="eyebrow">Fan vote</p>
-                <h2 id="popularityTitle">Popularity poll</h2>
+                <h2 id="popularityTitle">Fan Vote</h2>
               </div>
-              <button id="closePopularity" class="modal-close" type="button" aria-label="Close popularity poll">×</button>
+              <button id="closePopularity" class="modal-close" type="button" aria-label="Close fan vote">×</button>
             </div>
             <div id="popularityResults" class="results-list popularity-results"></div>
           </div>

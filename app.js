@@ -1355,7 +1355,7 @@ function handleMenuKeydown(event) {
   if (!isGamePage) return false;
 
   if (startPanel?.classList.contains("game-panel--active")) {
-    const startOptions = [carouselViewport, startGameButton, buttonsMode, tiltMode];
+    const startOptions = [carouselViewport, startGameButton, popularityButton, buttonsMode, tiltMode];
 
     if (event.key === "ArrowUp") {
       event.preventDefault();
