@@ -43,38 +43,41 @@ a {
 
 .event-banner {
   width: 100%;
-  background: #000;
-  color: #fff;
+  border-bottom: 1px solid rgba(23, 32, 38, 0.12);
+  background: #fff;
+  color: var(--ink);
 }
 
 .event-banner--bottom {
   width: min(calc(100% - 28px), 760px);
   margin: 28px auto 0;
   overflow: hidden;
+  border: 1px solid rgba(23, 32, 38, 0.12);
+  border-bottom-color: rgba(23, 32, 38, 0.18);
   border-radius: 8px;
 }
 
 .event-banner__inner {
   display: grid;
   justify-items: center;
-  gap: 10px;
+  gap: 11px;
   width: min(100%, 1180px);
   margin: 0 auto;
-  padding: max(12px, env(safe-area-inset-top)) 14px 14px;
+  padding: max(14px, env(safe-area-inset-top)) 14px 16px;
   text-align: center;
 }
 
-.event-banner__image {
+.event-banner__logo {
   display: block;
-  width: min(100%, 310px);
+  width: min(74vw, 220px);
   height: auto;
-  object-fit: contain;
+  filter: drop-shadow(0 5px 0 rgba(87, 0, 16, 0.24));
 }
 
 .event-banner__copy {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
 .event-banner h2,
@@ -83,17 +86,18 @@ a {
 }
 
 .event-banner h2 {
-  display: none;
-  color: #fff;
-  font-size: clamp(1.15rem, 2.4vw, 2rem);
-  line-height: 1.05;
+  color: var(--ink);
+  font-size: clamp(1.15rem, 4.9vw, 1.55rem);
+  font-weight: 950;
+  line-height: 1.15;
 }
 
 .event-banner p {
-  color: #ffc700;
-  font-size: clamp(1rem, 4.2vw, 1.35rem);
-  font-weight: 950;
-  line-height: 1.05;
+  max-width: 41rem;
+  color: #2f3a42;
+  font-size: clamp(0.9rem, 3.3vw, 1.05rem);
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .event-banner__button {
@@ -102,9 +106,9 @@ a {
   place-items: center;
   padding: 10px 16px;
   border-radius: 8px;
-  background: #ffc700;
-  color: #000;
-  box-shadow: 0 5px 0 #c79600;
+  background: #bd0000;
+  color: #fff;
+  box-shadow: 0 5px 0 #740014;
   font-weight: 950;
   line-height: 1;
 }
@@ -1177,8 +1181,8 @@ h2 {
     text-align: left;
   }
 
-  .event-banner__image {
-    width: 220px;
+  .event-banner__logo {
+    width: 190px;
   }
 
   .event-banner__copy {
@@ -1189,10 +1193,6 @@ h2 {
   .event-banner__button {
     grid-column: 2;
     justify-self: start;
-  }
-
-  .event-banner h2 {
-    display: block;
   }
 
   .site-disclaimer {
