@@ -373,186 +373,6 @@ function preloadSelectedRacerImages() {
   return Promise.all([preloadImage(racer.heroImage), preloadImage(racer.gameImage)]);
 }
 
-function renderRacers() {
-  if (!racerGrid) return;
-  racerGrid.innerHTML = racers
-    .map(
-      (racer, index) => `
-        <button class="racer-card ${index === state.pendingVoteIndex ? "racer-card--selected" : ""}" type="button" data-racer="${index}">
-          ${kartMarkup(racer)}
-          <span class="racer-name">${racer.name}</span>
-        </button>
-      `,
-    )
-    .join("");
-  submitVote.disabled = state.voted || state.pendingVoteIndex === null;
-  voteSubmitPanel?.classList.toggle("vote-submit-panel--visible", !submitVote.disabled);
-}
-
-function renderResults(targetList = resultsList, limit = 6) {
-  if (!targetList) return;
-  const ranked = racers
-    .map((racer, index) => ({
-      ...racer,
-      index,
-    }))
-    .sort((a, b) => b.votes - a.votes);
-  const maxVotes = Math.max(1, ...ranked.map((racer) => racer.votes));
-
-  targetList.innerHTML = ranked
-    .slice(0, limit)
-    .map(
-      (racer, index) => `
-        <div class="result-row">
-          <span class="result-rank">${index + 1}</span>
-          <span class="result-label">${racer.name}</span>
-          <div class="result-bar" style="--bar-color:${racer.pollColor};--bar-width:${(racer.votes / maxVotes) * 100}%">
-            <span></span>
-          </div>
-          <span class="result-count">${racer.votes}</span>
-        </div>
-      `,
-    )
-    .join("");
-}
-
-function renderPopularityResults() {
-  renderResults(popularityResults, racers.length);
-}
-
-function goToRace(index = state.selectedIndex) {
-  const racerIndex = Number.isInteger(index) && index >= 0 && index < racers.length ? index : 0;
-  localStorage.setItem(selectedRacerKey, String(racerIndex));
-  window.location.href = getRacerUrl(racerIndex);
-}
-
-async function submitVoteToSupabase(index) {
-  if (!isSupabaseConfigured()) return;
-
-  const endpoint = `${supabaseConfig.url.replace(/\/$/, "")}/rest/v1/racer_votes`;
-  const racer = racers[index];
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: getSupabaseHeaders({
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    }),
-    body: JSON.stringify({
-      racer_index: index,
-      racer_name: racer.name,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Vote submission failed with status ${response.status}`);
-  }
-}
-
-async function syncVoteTotalsFromSupabase() {
-  if (!isSupabaseConfigured()) return;
-
-  const endpoint = `${supabaseConfig.url.replace(/\/$/, "")}/rest/v1/racer_vote_totals?select=racer_index,vote_count`;
-  const response = await fetch(endpoint, {
-    headers: getSupabaseHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Vote totals failed with status ${response.status}`);
-  }
-
-  const totals = await response.json();
-  racers.forEach((racer) => {
-    racer.votes = 0;
-  });
-  totals.forEach((row) => {
-    if (racers[row.racer_index]) {
-      racers[row.racer_index].votes = Number(row.vote_count) || 0;
-    }
-  });
-  renderResults();
-}
-
-function focusRacer(index) {
-  window.requestAnimationFrame(() => {
-    racerGrid?.querySelector("[data-racer=\"" + index + "\"]")?.focus();
-  });
-}
-
-function getPollColumnCount() {
-  if (!racerGrid) return 1;
-  return Math.max(1, getComputedStyle(racerGrid).gridTemplateColumns.split(" ").length);
-}
-
-function selectRacer(index) {
-  state.pendingVoteIndex = index;
-  renderRacers();
-  submitVote.disabled = false;
-  voteSubmitPanel?.classList.add("vote-submit-panel--visible");
-  focusRacer(index);
-}
-
-function movePollSelection(offset) {
-  if (state.voted) return;
-  const currentIndex = state.pendingVoteIndex ?? 0;
-  const nextIndex = (currentIndex + offset + racers.length) % racers.length;
-  selectRacer(nextIndex);
-}
-
-function handlePollKeydown(event) {
-  if (!event.target.closest("[data-racer]")) return;
-  const columns = getPollColumnCount();
-
-  if (event.key === "ArrowRight") {
-    event.preventDefault();
-    movePollSelection(1);
-  } else if (event.key === "ArrowLeft") {
-    event.preventDefault();
-    movePollSelection(-1);
-  } else if (event.key === "ArrowDown") {
-    event.preventDefault();
-    movePollSelection(columns);
-  } else if (event.key === "ArrowUp") {
-    event.preventDefault();
-    movePollSelection(-columns);
-  } else if (event.key === "Home") {
-    event.preventDefault();
-    selectRacer(0);
-  } else if (event.key === "End") {
-    event.preventDefault();
-    selectRacer(racers.length - 1);
-  } else if (event.key === "Enter") {
-    event.preventDefault();
-    submitSelectedVote();
-  }
-}
-
-async function submitSelectedVote() {
-  if (state.voted || state.pendingVoteIndex === null) return;
-  state.voted = true;
-  state.selectedIndex = state.pendingVoteIndex;
-  localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
-  localStorage.setItem(voteSubmittedKey, "true");
-  racers[state.selectedIndex].votes += 1;
-  try {
-    await submitVoteToSupabase(state.selectedIndex);
-    await syncVoteTotalsFromSupabase();
-  } catch (error) {
-    console.warn(error);
-  }
-  renderRacers();
-  renderResults();
-  submitVote.disabled = true;
-  voteSubmitPanel?.classList.remove("vote-submit-panel--visible");
-  pollOptions.classList.add("poll-options--exit");
-  window.setTimeout(() => {
-    pollOptions.hidden = true;
-    resultsPanel.hidden = false;
-    resultsPanel.classList.add("results-panel--enter");
-    resultsPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, 330);
-}
-
 function updateCarouselPosition(animate = true) {
   if (!carouselTrack || !carouselViewport) return;
   const activeCard = carouselTrack.querySelector(".carousel-card--active");
@@ -739,7 +559,6 @@ function changeKart(direction) {
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
   replaceCurrentRacerUrl(state.selectedIndex);
   preloadSelectedRacerImages();
-  renderRacers();
   const wrappedForward = previousIndex === racers.length - 1 && state.selectedIndex === 0;
   const wrappedBackward = previousIndex === 0 && state.selectedIndex === racers.length - 1;
   renderCarousel(true, wrappedForward ? "after" : wrappedBackward ? "before" : "");
@@ -1292,7 +1111,6 @@ carouselDots?.addEventListener("click", (event) => {
   localStorage.setItem(selectedRacerKey, String(state.selectedIndex));
   replaceCurrentRacerUrl(state.selectedIndex);
   preloadSelectedRacerImages();
-  renderRacers();
   renderCarousel(true);
 });
 

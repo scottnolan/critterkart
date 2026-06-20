@@ -96,7 +96,7 @@ a {
   max-width: 41rem;
   color: #2f3a42;
   font-size: clamp(0.9rem, 3.3vw, 1.05rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.25;
 }
 
@@ -1176,7 +1176,7 @@ h2 {
   .event-banner__inner {
     grid-template-columns: auto minmax(0, 1fr);
     justify-items: start;
-    gap: 16px;
+    gap: 32px;
     padding: max(12px, env(safe-area-inset-top)) 22px 14px;
     text-align: left;
   }
@@ -1242,11 +1242,13 @@ h2 {
 
 @media (min-width: 920px) {
   .event-banner--bottom {
-    width: min(calc(100% - 44px), 1280px);
+    width: calc(100% - 44px);
   }
 
   .event-banner__inner {
+    width: min(100%, 1900px);
     grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 38px;
     align-items: center;
   }
 
